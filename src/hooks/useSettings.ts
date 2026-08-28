@@ -12,19 +12,16 @@ export function useSettings() {
     return () => window.clearTimeout(t);
   }, [saved]);
 
-  const updateOpenRouterKey = useCallback((value: string) => {
-    setSettings((prev) => ({ ...prev, openRouterKey: value }));
+  const updateSettings = useCallback((patch: Partial<AppSettings>) => {
+    setSettings((prev) => ({ ...prev, ...patch }));
   }, []);
 
-  const persist = useCallback(
-    (next?: AppSettings) => {
-      const toSave = next ?? settings;
-      saveSettings(toSave);
-      setSettings(toSave);
-      setSaved(true);
-    },
-    [settings],
-  );
+  const persist = useCallback((next?: AppSettings) => {
+    const toSave = next ?? settings;
+    saveSettings(toSave);
+    setSettings(toSave);
+    setSaved(true);
+  }, [settings]);
 
-  return { settings, setSettings, updateOpenRouterKey, persist, saved };
+  return { settings, setSettings, updateSettings, persist, saved };
 }

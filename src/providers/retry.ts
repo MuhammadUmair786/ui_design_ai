@@ -1,6 +1,15 @@
-import type { ProviderClient } from './types';
+import type { CompleteOptions, ProviderClient } from './types';
 import { ProviderError } from './types';
 import type { ChatMessage } from '../types';
+import { apiRequestQueue } from './api-queue';
+
+function isRetryableProviderError(err: unknown): boolean {
+  if (!(err instanceof ProviderError) || err.code !== 'parse') return false;
+  const msg = err.message.toLowerCase();
+  // Truncation is retried by the generator with a higher token budget.
+  if (msg.includes('truncated')) return false;
+  return msg.includes('empty response');
+}
 
 /**
  * Sleep helper used by retry-with-backoff.
@@ -39,8 +48,9 @@ export async function withRetry<T>(
       const isRateLimit =
         status === 429 ||
         (err instanceof Error && /429|rate.?limit/i.test(err.message));
+      const isRetryableEmpty = isRetryableProviderError(err);
 
-      if (!isRateLimit || attempt === maxAttempts) {
+      if ((!isRateLimit && !isRetryableEmpty) || attempt === maxAttempts) {
         throw err;
       }
 
@@ -59,6 +69,9 @@ export async function completeWithRetry(
   client: ProviderClient,
   system: string,
   messages: ChatMessage[],
+  options?: CompleteOptions,
 ): Promise<string> {
-  return withRetry(() => client.complete(system, messages));
+  return withRetry(() =>
+    apiRequestQueue.run(() => client.complete(system, messages, options)),
+  );
 }

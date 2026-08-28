@@ -2,7 +2,7 @@ import type { CriticVerdict, DesignSpec } from '../types';
 import type { ProviderClient } from '../providers';
 import { completeWithRetry } from '../providers';
 import { extractJson } from './sanitize';
-import { CRITIC_SYSTEM, criticUserPrompt } from './prompts';
+import { criticUserPrompt } from './prompts';
 
 /**
  * Critic agent: reviews HTML against the planner spec.
@@ -12,8 +12,9 @@ export async function runCritic(
   client: ProviderClient,
   spec: DesignSpec,
   html: string,
+  systemPrompt: string,
 ): Promise<CriticVerdict> {
-  const raw = await completeWithRetry(client, CRITIC_SYSTEM, [
+  const raw = await completeWithRetry(client, systemPrompt, [
     {
       role: 'user',
       content: criticUserPrompt(JSON.stringify(spec, null, 2), html),

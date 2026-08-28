@@ -2,7 +2,7 @@ import type { DesignSpec } from '../types';
 import type { ProviderClient } from '../providers';
 import { completeWithRetry } from '../providers';
 import { extractJson } from './sanitize';
-import { PLANNER_SYSTEM, plannerUserPrompt } from './prompts';
+import { plannerUserPrompt } from './prompts';
 
 function assertDesignSpec(data: unknown): DesignSpec {
   if (!data || typeof data !== 'object') {
@@ -27,8 +27,9 @@ function assertDesignSpec(data: unknown): DesignSpec {
 export async function runPlanner(
   client: ProviderClient,
   userPrompt: string,
+  systemPrompt: string,
 ): Promise<DesignSpec> {
-  const raw = await completeWithRetry(client, PLANNER_SYSTEM, [
+  const raw = await completeWithRetry(client, systemPrompt, [
     { role: 'user', content: plannerUserPrompt(userPrompt) },
   ]);
 

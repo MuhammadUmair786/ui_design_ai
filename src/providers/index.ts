@@ -7,12 +7,13 @@ export function createProviderClient(
   slot: SlotId,
   apiKey: string,
   model: string,
+  maxTokens: number,
 ): ProviderClient {
-  return createOpenRouterClient(apiKey, model, slot);
+  return createOpenRouterClient(apiKey, model, slot, maxTokens);
 }
 
-export type { ProviderClient } from './types';
-export { ProviderError, classifyError } from './types';
+export type { ProviderClient, ProviderErrorCode } from './types';
+export { ProviderError, classifyError, extractErrorDetail } from './types';
 export { completeWithRetry, withRetry } from './retry';
 export { fetchOpenRouterModels, getFallbackModels } from './models';
 export { OPENROUTER_BASE_URL } from './openrouter';

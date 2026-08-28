@@ -13,6 +13,8 @@ interface EditorViewProps {
   model: string;
   initialHtml: string;
   apiKey: string;
+  maxTokens: number;
+  generatorPrompt: string;
   onClose: () => void;
   onSave: (slot: SlotId, html: string) => void;
 }
@@ -22,6 +24,8 @@ export function EditorView({
   model,
   initialHtml,
   apiKey,
+  maxTokens,
+  generatorPrompt,
   onClose,
   onSave,
 }: EditorViewProps) {
@@ -42,8 +46,8 @@ export function EditorView({
     setAiBusy(true);
     setAiError(null);
     try {
-      const client = createProviderClient(slot, apiKey, model);
-      const next = await runHtmlEdit(client, code, trimmed);
+      const client = createProviderClient(slot, apiKey, model, maxTokens);
+      const next = await runHtmlEdit(client, code, trimmed, generatorPrompt, maxTokens);
       setCode(next);
       setInstruction('');
     } catch (err) {
@@ -51,7 +55,7 @@ export function EditorView({
     } finally {
       setAiBusy(false);
     }
-  }, [apiKey, code, instruction, model, slot]);
+  }, [apiKey, code, generatorPrompt, instruction, maxTokens, model, slot]);
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-[var(--bg)]">

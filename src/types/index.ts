@@ -1,3 +1,8 @@
+import type { PromptGuidance } from '../agents/prompts';
+import { DEFAULT_MAX_TOKENS, DEFAULT_PROMPT_GUIDANCE } from '../agents/prompts';
+
+export type { PromptGuidance };
+
 /** Parallel design slots — each runs its own pipeline with a chosen OpenRouter model. */
 export type SlotId = 'a' | 'b' | 'c';
 
@@ -9,19 +14,36 @@ export const SLOT_LABELS: Record<SlotId, string> = {
   c: 'Design 3',
 };
 
-/** Cheap defaults so free/low OpenRouter balances can run all 3 slots. */
+/** Moderate-tier defaults — one flagship model per provider (Gemini, OpenAI, Claude). */
 export const DEFAULT_MODELS: Record<SlotId, string> = {
-  a: 'google/gemini-2.5-flash-lite',
-  b: 'openai/gpt-4o-mini',
-  c: 'deepseek/deepseek-chat-v3.1',
+  a: 'google/gemini-3.5-flash',
+  b: 'openai/gpt-5.4',
+  c: 'anthropic/claude-sonnet-5',
 };
 
 export type SlotModels = Record<SlotId, string>;
 
-/** Single BYOK key for https://openrouter.ai */
+/** Which design columns to include in the next generate run. */
+export type SlotSelection = Record<SlotId, boolean>;
+
+export const ALL_SLOTS_SELECTED: SlotSelection = { a: true, b: true, c: true };
+
+export function slotsFromSelection(selection: SlotSelection): SlotId[] {
+  return SLOTS.filter((slot) => selection[slot]);
+}
+
+/** BYOK key + pipeline tuning for https://openrouter.ai */
 export interface AppSettings {
   openRouterKey: string;
+  maxTokens: number;
+  promptGuidance: PromptGuidance;
 }
+
+export const DEFAULT_SETTINGS: AppSettings = {
+  openRouterKey: '',
+  maxTokens: DEFAULT_MAX_TOKENS,
+  promptGuidance: structuredClone(DEFAULT_PROMPT_GUIDANCE),
+};
 
 export interface OpenRouterModel {
   id: string;
@@ -68,6 +90,13 @@ export type PipelineStage =
   | 'done'
   | 'error';
 
+export type ProviderErrorCode =
+  | 'auth'
+  | 'rate_limit'
+  | 'network'
+  | 'parse'
+  | 'unknown';
+
 export interface SlotResult {
   slot: SlotId;
   model: string;
@@ -75,6 +104,11 @@ export interface SlotResult {
   spec: DesignSpec | null;
   html: string | null;
   error: string | null;
+  /** Pipeline step active when the error occurred. */
+  failedStage: PipelineStage | null;
+  errorCode: ProviderErrorCode | null;
+  errorStatus: number | null;
+  errorDetail: string | null;
   /** Whether the critic triggered a fix pass. */
   fixed: boolean;
 }

@@ -122,7 +122,9 @@ export function ModelSelect({
             })}
           </ul>
           <p className="border-t border-[var(--line)] px-3 py-1.5 text-[10px] text-[var(--ink-muted)]">
-            {filtered.length} of {models.length} OpenRouter models
+            {filtered.length === models.length
+              ? `${models.length} models`
+              : `${filtered.length} of ${models.length} models`}
           </p>
         </div>
       )}

@@ -68,6 +68,22 @@ export function isParseableHtml(html: string): boolean {
   }
 }
 
+/** Reject truncated HTML that DOMParser accepts but browsers render broken. */
+export function isStructurallyCompleteHtml(html: string): boolean {
+  const t = html.trim();
+  if (!/<\/html>\s*$/i.test(t)) return false;
+
+  const openScript = (t.match(/<script\b/gi) ?? []).length;
+  const closeScript = (t.match(/<\/script>/gi) ?? []).length;
+  if (openScript !== closeScript) return false;
+
+  const openStyle = (t.match(/<style\b/gi) ?? []).length;
+  const closeStyle = (t.match(/<\/style>/gi) ?? []).length;
+  if (openStyle !== closeStyle) return false;
+
+  return true;
+}
+
 /**
  * Full sanitize pipeline for generated HTML before store/render.
  * Throws SanitizeError if the output is not valid HTML.
@@ -83,6 +99,12 @@ export function sanitizeHtml(raw: string): string {
 
   if (!isParseableHtml(stripped)) {
     throw new SanitizeError('Generated HTML failed to parse.');
+  }
+
+  if (!isStructurallyCompleteHtml(stripped)) {
+    throw new SanitizeError(
+      'Generated HTML appears truncated or incomplete. Retrying…',
+    );
   }
 
   return stripped;

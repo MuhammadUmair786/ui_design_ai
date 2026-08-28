@@ -1,6 +1,15 @@
 import type { OpenRouterModel } from '../types';
+import { CURATED_MODEL_IDS } from './curated-models';
 import { OPENROUTER_BASE_URL } from './openrouter';
 import fallbackModels from './openrouter-models.fallback.json';
+
+function applyCuratedFilter(models: OpenRouterModel[]): OpenRouterModel[] {
+  const byId = new Map(models.map((m) => [m.id, m]));
+  return CURATED_MODEL_IDS.map((id) => {
+    const found = byId.get(id);
+    return found ?? { id, name: id };
+  });
+}
 
 interface OpenRouterModelsResponse {
   data?: Array<{
@@ -31,18 +40,17 @@ export async function fetchOpenRouterModels(): Promise<OpenRouterModel[]> {
       .map((m) => ({
         id: m.id as string,
         name: (m.name && m.name.trim()) || (m.id as string),
-      }))
-      .sort((a, b) => a.id.localeCompare(b.id));
+      }));
 
     if (mapped.length === 0) {
-      return fallbackModels as OpenRouterModel[];
+      return applyCuratedFilter(fallbackModels as OpenRouterModel[]);
     }
-    return mapped;
+    return applyCuratedFilter(mapped);
   } catch {
-    return fallbackModels as OpenRouterModel[];
+    return applyCuratedFilter(fallbackModels as OpenRouterModel[]);
   }
 }
 
 export function getFallbackModels(): OpenRouterModel[] {
-  return fallbackModels as OpenRouterModel[];
+  return applyCuratedFilter(fallbackModels as OpenRouterModel[]);
 }

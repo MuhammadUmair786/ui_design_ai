@@ -1,4 +1,11 @@
-import type { OpenRouterModel, PipelineStage, SlotId, SlotResult } from '../types';
+import { useState } from 'react';
+import type {
+  OpenRouterModel,
+  PipelineStage,
+  ProviderErrorCode,
+  SlotId,
+  SlotResult,
+} from '../types';
 import { SLOT_LABELS } from '../types';
 import { IframePreview } from './IframePreview';
 import { DownloadButton } from './DownloadButton';
@@ -12,6 +19,8 @@ interface DesignColumnProps {
   modelDisabled: boolean;
   onModelChange: (slot: SlotId, model: string) => void;
   onEdit: (slot: SlotId) => void;
+  onGenerate?: (slot: SlotId) => void;
+  generateDisabled?: boolean;
 }
 
 const ACCENT: Record<SlotId, string> = {
@@ -22,12 +31,20 @@ const ACCENT: Record<SlotId, string> = {
 
 const STAGE_LABEL: Record<PipelineStage, string> = {
   idle: 'Waiting',
-  planning: 'Planner…',
-  generating: 'Generator…',
-  critiquing: 'Critic…',
-  fixing: 'Fix pass…',
+  planning: 'Planner',
+  generating: 'Generator',
+  critiquing: 'Critic',
+  fixing: 'Fix pass',
   done: 'Ready',
   error: 'Failed',
+};
+
+const ERROR_HINTS: Record<ProviderErrorCode, string> = {
+  auth: 'Open Settings and verify your OpenRouter API key.',
+  rate_limit: 'Requests are queued one at a time. Wait a minute, then try again.',
+  network: 'Check your internet connection and retry.',
+  parse: 'The model returned unusable output. Try again or pick a different model.',
+  unknown: 'Check the technical details below or try a different model.',
 };
 
 function LoadingSkeleton({ stage }: { stage: PipelineStage }) {
@@ -42,8 +59,65 @@ function LoadingSkeleton({ stage }: { stage: PipelineStage }) {
         <div className="h-16 animate-pulse rounded bg-[var(--line)]/50" />
       </div>
       <p className="text-center text-xs font-medium text-[var(--ink-muted)]">
-        {STAGE_LABEL[stage]}
+        {STAGE_LABEL[stage]}…
       </p>
+    </div>
+  );
+}
+
+function PipelineErrorPanel({ result }: { result: SlotResult }) {
+  const { error, failedStage, errorCode, errorStatus, errorDetail } = result;
+  const [showDetail, setShowDetail] = useState(false);
+
+  const hint = errorCode ? ERROR_HINTS[errorCode] : null;
+  const stepLabel =
+    failedStage && failedStage !== 'error' && failedStage !== 'idle'
+      ? STAGE_LABEL[failedStage]
+      : null;
+  const detailText =
+    errorDetail && errorDetail !== error ? errorDetail : null;
+
+  return (
+    <div
+      className="flex h-full flex-col items-center justify-center gap-3 overflow-y-auto p-6 text-center"
+      role="alert"
+    >
+      <p className="text-sm font-semibold text-[var(--danger)]">Pipeline failed</p>
+
+      {stepLabel && (
+        <p className="text-xs font-medium text-[var(--ink-muted)]">
+          Failed during: <span className="text-[var(--ink)]">{stepLabel}</span>
+        </p>
+      )}
+
+      {error && (
+        <p className="max-w-sm text-sm leading-relaxed text-[var(--ink)]">{error}</p>
+      )}
+
+      {errorStatus != null && (
+        <p className="text-xs text-[var(--ink-muted)]">HTTP {errorStatus}</p>
+      )}
+
+      {hint && (
+        <p className="max-w-sm text-xs leading-relaxed text-[var(--ink-muted)]">{hint}</p>
+      )}
+
+      {detailText && (
+        <div className="w-full max-w-sm">
+          <button
+            type="button"
+            onClick={() => setShowDetail((v) => !v)}
+            className="text-xs font-medium text-[var(--accent)] hover:underline"
+          >
+            {showDetail ? 'Hide technical details' : 'Show technical details'}
+          </button>
+          {showDetail && (
+            <pre className="mt-2 max-h-40 overflow-auto rounded-md border border-[var(--line)] bg-white p-3 text-left text-[10px] leading-relaxed text-[var(--ink-muted)] whitespace-pre-wrap break-words">
+              {detailText}
+            </pre>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -56,9 +130,12 @@ export function DesignColumn({
   modelDisabled,
   onModelChange,
   onEdit,
+  onGenerate,
+  generateDisabled,
 }: DesignColumnProps) {
-  const { slot, stage, html, error, fixed } = result;
+  const { slot, stage, html, fixed } = result;
   const running = stage !== 'idle' && stage !== 'done' && stage !== 'error';
+  const canGenerate = !!onGenerate && !generateDisabled && !running;
 
   const modelsWithSelected =
     selectedModel && !models.some((m) => m.id === selectedModel)
@@ -86,6 +163,17 @@ export function DesignColumn({
             )}
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
+            {onGenerate && (
+              <button
+                type="button"
+                disabled={!canGenerate}
+                onClick={() => onGenerate(slot)}
+                title="Generate this design only"
+                className="rounded-md border border-[var(--line)] bg-white px-2.5 py-1.5 text-xs font-medium hover:enabled:bg-[var(--bg)] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {running ? 'Running…' : 'Generate'}
+              </button>
+            )}
             <DownloadButton html={html} slot={slot} model={selectedModel} />
             <button
               type="button"
@@ -115,12 +203,7 @@ export function DesignColumn({
       <div className="relative min-h-[320px] flex-1 bg-[var(--bg)]">
         {running && <LoadingSkeleton stage={stage} />}
 
-        {stage === 'error' && (
-          <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center">
-            <p className="text-sm font-medium text-[var(--danger)]">Pipeline failed</p>
-            <p className="max-w-sm text-xs text-[var(--ink-muted)]">{error}</p>
-          </div>
-        )}
+        {stage === 'error' && <PipelineErrorPanel result={result} />}
 
         {stage === 'idle' && !html && (
           <div className="flex h-full items-center justify-center p-6 text-center text-sm text-[var(--ink-muted)]">

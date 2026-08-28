@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { SlotId } from './types';
+import { buildSystemPrompts } from './agents/prompts';
 import { useSettings } from './hooks/useSettings';
 import { useSlotModels } from './hooks/useSlotModels';
 import { useOpenRouterModels } from './hooks/useOpenRouterModels';
@@ -9,13 +10,24 @@ import { downloadAllAsZip } from './utils/download';
 import { SettingsPanel } from './components/SettingsPanel';
 import { DesignColumn } from './components/DesignColumn';
 import { EditorView } from './components/EditorView';
+import { SlotSelector } from './components/SlotSelector';
+import { SLOTS, slotsFromSelection } from './types';
 
 export default function App() {
-  const { settings, updateOpenRouterKey, persist, saved } = useSettings();
+  const { settings, persist, saved } = useSettings();
   const { models: slotModels, setSlotModel } = useSlotModels();
   const { models: catalog, loading: modelsLoading } = useOpenRouterModels();
-  const { results, isRunning, prompt, setPrompt, generate, updateHtml } =
-    usePipeline(slotModels);
+  const {
+    results,
+    isRunning,
+    prompt,
+    setPrompt,
+    slotSelection,
+    setSlotSelection,
+    generate,
+    generateOne,
+    updateHtml,
+  } = usePipeline(slotModels);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [editing, setEditing] = useState<SlotId | null>(null);
@@ -29,6 +41,13 @@ export default function App() {
 
   const successCount = results.filter((r) => r.html).length;
 
+  const generatorPrompt = useMemo(
+    () => buildSystemPrompts(settings.promptGuidance).generator,
+    [settings.promptGuidance],
+  );
+
+  const selectedCount = slotsFromSelection(slotSelection).length;
+
   const handleGenerate = () => {
     if (!hasOpenRouterKey(settings)) {
       setSettingsOpen(true);
@@ -36,6 +55,23 @@ export default function App() {
     }
     void generate(settings, prompt);
   };
+
+  const handleGenerateOne = (slot: SlotId) => {
+    if (!hasOpenRouterKey(settings)) {
+      setSettingsOpen(true);
+      return;
+    }
+    if (!prompt.trim()) return;
+    void generateOne(settings, prompt, slot);
+  };
+
+  const generateLabel = isRunning
+    ? 'Running pipelines…'
+    : selectedCount === SLOTS.length
+      ? 'Generate 3 designs'
+      : selectedCount === 1
+        ? 'Generate 1 design'
+        : `Generate ${selectedCount} designs`;
 
   const handleDownloadAll = async () => {
     setZipError(null);
@@ -95,19 +131,26 @@ export default function App() {
             disabled={isRunning}
             className="mt-2 w-full resize-y rounded-md border border-[var(--line)] bg-white px-3 py-2 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 disabled:opacity-60"
           />
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={handleGenerate}
-              disabled={isRunning || !prompt.trim()}
-              className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-40 hover:enabled:bg-[var(--accent-hover)]"
-            >
-              {isRunning ? 'Running pipelines…' : 'Generate 3 designs'}
-            </button>
-            <p className="text-xs text-[var(--ink-muted)]">
-              Each column runs Planner → Generator → Critic → optional Fix with
-              its selected model.
-            </p>
+          <div className="mt-3 flex flex-col gap-3">
+            <SlotSelector
+              selection={slotSelection}
+              disabled={isRunning}
+              onChange={setSlotSelection}
+            />
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={handleGenerate}
+                disabled={isRunning || !prompt.trim() || selectedCount === 0}
+                className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-40 hover:enabled:bg-[var(--accent-hover)]"
+              >
+                {generateLabel}
+              </button>
+              <p className="text-xs text-[var(--ink-muted)]">
+                Each column runs Planner → Generator → Critic → optional Fix.
+                API calls are queued to avoid rate limits.
+              </p>
+            </div>
           </div>
           {zipError && (
             <p className="mt-2 text-xs text-[var(--danger)]" role="alert">
@@ -127,6 +170,8 @@ export default function App() {
               modelDisabled={isRunning}
               onModelChange={setSlotModel}
               onEdit={(slot) => setEditing(slot)}
+              onGenerate={handleGenerateOne}
+              generateDisabled={isRunning || !prompt.trim()}
             />
           ))}
         </div>
@@ -136,9 +181,8 @@ export default function App() {
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         settings={settings}
-        onChangeKey={updateOpenRouterKey}
-        onSave={() => {
-          persist();
+        onSave={(next) => {
+          persist(next);
         }}
         saved={saved}
       />
@@ -150,6 +194,8 @@ export default function App() {
           model={slotModels[editing]}
           initialHtml={editingResult.html}
           apiKey={settings.openRouterKey}
+          maxTokens={settings.maxTokens}
+          generatorPrompt={generatorPrompt}
           onClose={() => setEditing(null)}
           onSave={(slot, html) => updateHtml(slot, html)}
         />
