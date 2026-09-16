@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SplitEasy Bill Split Screen</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+            background-color: #F9FAFB;
+            color: #1F2937;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 16px;
+            gap: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 8px 0;
+            margin-bottom: 16px;
+        }
+        
+        .back-arrow {
+            width: 24px;
+            height: 24px;
+            color: #6B7280;
+            cursor: pointer;
+        }
+        
+        .logo {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+            color: #00D4AA;
+        }
+        
+        .page-title {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+            font-weight: 600;
+            font-size: 20px;
+            margin-left: auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .bill-input {
+            text-align: center;
+            padding: 24px 16px;
+            position: relative;
+        }
+        
+        .receipt-icon {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 20px;
+            height: 20px;
+            color: #6B7280;
+        }
+        
+        .currency-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .currency-symbol {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: #00D4AA;
+        }
+        
+        .amount-input {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: #1F2937;
+            width: 200px;
+            text-align: left;
+        }
+        
+        .description-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-top: 8px;
+        }
+        
+        .description-input:focus {
+            border-color: #00D4AA;
+            outline: none;
+        }
+        
+        .tip-selector {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .tip-label {
+            font-weight: 500;
+            font-size: 16px;
+            margin-right: 8px;
+            color: #6B7280;
+        }
+        
+        .tip-btn {
+            padding: 8px 16px;
+            border: 1px solid #E5E7EB;
+            border-radius: 20px;
+            background: white;
+            color: #6B7280;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 150ms ease;
+        }
+        
+        .tip-btn.active {
+            background: #00D4AA;
+            color: white;
+            border-color: #00D4AA;
+        }
+        
+        .tip-btn:hover {
+            border-color: #00D4AA;
+        }
+        
+        .custom-tip {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .section-title {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+            font-weight: 600;
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .add-person {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .add-person-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .add-person-btn {
+            width: 44px;
+            height: 44px;
+            background: #00D4AA;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .person-card-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .person-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #E5E7EB;
+            position: relative;
+            transition: transform 300ms ease;
+            touch-action: pan-y;
+        }
+        
+        .person-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #00D4AA;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .person-info {
+            flex: 1;
+        }
+        
+        .person-name {
+            font-weight: 500;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .equal-split-indicator {
+            width: 16px;
+            height: 16px;
+            background: #F3F4F6;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #6B7280;
+            border: 1px solid #E5E7EB;
+        }
+        
+        .person-share {
+            font-size: 14px;
+            color: #6B7280;
+        }
+        
+        .settle-btn {
+            padding: 6px 12px;
+            background: #00D4AA;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .paid-badge {
+            padding: 6px 12px;
+            background: #10B981;
+            color: white;
+            border-radius: 16px;
+            font-weight: 500;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .delete-action {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            background: #EF4444;
+            color: white;
+            border: none;
+            padding: 0 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 0 8px 8px 0;
+            z-index: 1;
+        }
+        
+        .summary-footer {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #E5E7EB;
+            border-radius: 4px;
+            margin: 12px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #00D4AA;
+            border-radius: 4px;
+            transition: width 300ms ease;
+        }
+        
+        .share-btn {
+            width: 100%;
+            padding: 16px;
+            background: #00D4AA;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .share-btn:hover {
+            background: #00C49A;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <svg class="back-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            <div class="logo">SplitEasy</div>
+            <div class="page-title">Split Bill</div>
+        </header>
+
+        <div class="card bill-input">
+            <svg class="receipt-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5l-5-5 4-4 5 5v6a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h7l5 5v11z"/>
+            </svg>
+            <div class="currency-display">
+                <span class="currency-symbol">$</span>
+                <input type="number" class="amount-input" id="billAmount" placeholder="0.00" step="0.01">
+            </div>
+            <input type="text" class="description-input" id="billDescription" placeholder="What's this bill for?">
+        </div>
+
+        <div class="card">
+            <div class="tip-selector">
+                <span class="tip-label">Tip:</span>
+                <button class="tip-btn" data-tip="10">10%</button>
+                <button class="tip-btn" data-tip="15">15%</button>
+                <button class="tip-btn active" data-tip="20">20%</button>
+                <input type="number" class="custom-tip" id="customTip" placeholder="%" min="0" max="100">
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">Split Between</h2>
+            <div class="add-person">
+                <input type="text" class="add-person-input" id="personName" placeholder="Add person...">
+                <button class="add-person-btn" id="addPersonBtn">+</button>
+            </div>
+            <div id="peopleList"></div>
+        </div>
+
+        <div class="summary-footer">
+            <div class="summary-row">
+                <span>Total Collected:</span>
+                <span id="totalCollected">$0.00</span>
+            </div>
+            <div class="summary-row">
+                <span>Remaining:</span>
+                <span id="remaining">$0.00</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div style="text-align: center; color: #6B7280; font-size: 14px;">
+                <span id="completionPercent">0%</span> Complete
+            </div>
+        </div>
+
+        <button class="share-btn" id="shareBtn">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5z"/>
+            </svg>
+            Share Bill
+        </button>
+    </div>
+
+    <script>
+        let billAmount = 0;
+        let tipPercent = 20;
+        let people = [];
+        let payments = {};
+
+        const billAmountInput = document.getElementById('billAmount');
+        const customTipInput = document.getElementById('customTip');
+        const personNameInput = document.getElementById('personName');
+        const addPersonBtn = document.getElementById('addPersonBtn');
+        const peopleList = document.getElementById('peopleList');
+        
+        function calculateShare() {
+            if (people.length === 0) return 0;
+            const totalWithTip = billAmount * (1 + tipPercent / 100);
+            return totalWithTip / people.length;
+        }
+
+        function updateSummary() {
+            const totalBill = billAmount * (1 + tipPercent / 100);
+            const collected = Object.values(payments).filter(p => p).length * calculateShare();
+            const remaining = totalBill - collected;
+            const progress = totalBill > 0 ? (collected / totalBill) * 100 : 0;
+
+            document.getElementById('totalCollected').textContent = `$${collected.toFixed(2)}`;
+            document.getElementById('remaining').textContent = `$${remaining.toFixed(2)}`;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            document.getElementById('completionPercent').textContent = `${Math.round(progress)}%`;
+        }
+
+        function renderPeople() {
+            const share = calculateShare();
+            peopleList.innerHTML = people.map(person => {
+                const isPaid = payments[person];
+                return `
+                    <div class="person-card-container">
+                        <div class="person-card" data-person="${person}">
+                            <div class="person-avatar">${person[0].toUpperCase()}</div>
+                            <div class="person-info">
+                                <div class="person-name">
+                                    ${person}
+                                    <div class="equal-split-indicator">=</div>
+                                </div>
+                                <div class="person-share">$${share.toFixed(2)}</div>
+                            </div>
+                            ${isPaid 
+                                ? `<div class="paid-badge" onclick="togglePayment('${person}')">✓ Paid</div>`
+                                : `<button class="settle-btn" onclick="togglePayment('${person}')">Settle Up</button>`
+                            }
+                        </div>
+                        <button class="delete-action" onclick="removePerson('${person}')">Delete</button>
+                    </div>
+                `;
+            }).join('');
+            
+            // Add swipe gesture listeners
+            document.querySelectorAll('.person-card').forEach(card => {
+                addSwipeListener(card);
+            });
+            
+            updateSummary();
+        }
+
+        function addSwipeListener(card) {
+            let startX = 0;
+            let currentX = 0;
+            let isDragging = false;
+
+            card.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+                isDragging = true;
+            });
+
+            card.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                currentX = e.touches[0].clientX;
+                const deltaX = startX - currentX;
+                
+                if (deltaX > 0) {
+                    card.style.transform = `translateX(-${Math.min(deltaX, 80)}px)`;
+                } else {
+                    card.style.transform = 'translateX(0)';
+                }
+            });
+
+            card.addEventListener('touchend', (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                
+                const deltaX = startX - currentX;
+                if (deltaX > 40) {
+                    card.style.transform = 'translateX(-80px)';
+                } else {
+                    card.style.transform = 'translateX(0)';
+                }
+            });
+
+            // Mouse events for desktop testing
+            card.addEventListener('mousedown', (e) => {
+                startX = e.clientX;
+                isDragging = true;
+                e.preventDefault();
+            });
+
+            card.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                currentX = e.clientX;
+                const deltaX = startX - currentX;
+                
+                if (deltaX > 0) {
+                    card.style.transform = `translateX(-${Math.min(deltaX, 80)}px)`;
+                } else {
+                    card.style.transform = 'translateX(0)';
+                }
+            });
+
+            card.addEventListener('mouseup', (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                
+                const deltaX = startX - currentX;
+                if (deltaX > 40) {
+                    card.style.transform = 'translateX(-80px)';
+                } else {
+                    card.style.transform = 'translateX(0)';
+                }
+            });
+
+            card.addEventListener('mouseleave', (e) => {
+                if (isDragging) {
+                    isDragging = false;
+                    card.style.transform = 'translateX(0)';
+                }
+            });
+        }
+
+        function addPerson(name) {
+            if (name && !people.includes(name)) {
+                people.push(name);
+                payments[name] = false;
+                renderPeople();
+                personNameInput.value = '';
+            }
+        }
+
+        function removePerson(name) {
+            people = people.filter(p => p !== name);
+            delete payments[name];
+            renderPeople();
+        }
+
+        function togglePayment(name) {
+            payments[name] = !payments[name];
+            renderPeople();
+        }
+
+        billAmountInput.addEventListener('input', (e) => {
+            billAmount = parseFloat(e.target.value) || 0;
+            renderPeople();
+        });
+
+        document.querySelectorAll('.tip-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                tipPercent = parseInt(btn.dataset.tip);
+                customTipInput.value = '';
+                renderPeople();
+            });
+        });
+
+        customTipInput.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            if (value >= 0) {
+                document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active'));
+                tipPercent = value;
+                renderPeople();
+            }
+        });
+
+        addPersonBtn.addEventListener('click', () => {
+            addPerson(personNameInput.value.trim());
+        });
+
+        personNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addPerson(personNameInput.value.trim());
+            }
+        });
+
+        document.getElementById('shareBtn').addEventListener('click', () => {
+            const share = calculateShare();
+            const text = `Bill Split:\nTotal: $${(billAmount * (1 + tipPercent / 100)).toFixed(2)}\nPer person: $${share.toFixed(2)}\nPeople: ${people.join(', ')}`;
+            
+            if (navigator.share) {
+                navigator.share({ text });
+            } else {
+                navigator.clipboard.writeText(text);
+                alert('Bill details copied to clipboard!');
+            }
+        });
+
+        // Initialize with sample data
+        addPerson('You');
+        billAmountInput.value = '48.50';
+        billAmount = 48.50;
+        renderPeople();
+    </script>
+</body>
+</html>

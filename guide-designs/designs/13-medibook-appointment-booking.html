@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediBook Appointment Booking</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #FFFFFF;
+      color: #212B32;
+      margin: 0;
+      padding: 16px;
+      max-width: 600px;
+      margin: auto;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    h1 { font-size: 24px; }
+    h2 { font-size: 18px; font-weight: 600; }
+    p, label, button, select, textarea {
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    label { font-size: 14px; font-weight: 500; }
+    .caption { font-size: 12px; }
+    .button {
+      background-color: #005EB8;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 200ms ease;
+    }
+    .button:hover { background-color: #004b93; }
+    .button:focus { outline: 3px solid #FFBF47; }
+    .date-picker, .appointment-type, .patient-notes, .confirmation, .warning-message, .error-message, .success-screen {
+      margin-bottom: 16px;
+    }
+    .date-picker .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+    .calendar .day {
+      padding: 8px;
+      border-radius: 4px;
+      text-align: center;
+      cursor: pointer;
+      transition: background-color 200ms ease;
+      position: relative;
+    }
+    .calendar .available:hover .tooltip { display: block; }
+    .calendar .available { background-color: #D9E8F6; }
+    .calendar .unavailable { background-color: #F3F3F3; color: #768692; cursor: not-allowed; }
+    .calendar .unavailable:hover { background-color: #E1E1E1; }
+    .calendar .day:hover { background-color: #BFD5EA; }
+    .tooltip {
+      display: none;
+      position: absolute;
+      background-color: #212B32;
+      color: white;
+      padding: 8px;
+      border-radius: 4px;
+      top: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+    }
+    .appointment-type select, .patient-notes textarea {
+      width: 100%;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #768692;
+    }
+    .appointment-type select:focus, .patient-notes textarea:focus {
+      outline: 3px solid #FFBF47;
+    }
+    .character-counter { text-align: right; font-size: 12px; color: #768692; }
+    .warning, .error {
+      border: 1px solid #FFBF47;
+      background-color: #FFF2CC;
+      padding: 8px;
+      border-radius: 4px;
+      color: #212B32;
+    }
+    .warning { display: none; }
+    .success-screen {
+      display: none;
+      text-align: center;
+      border: 1px solid #D9E8F6;
+      padding: 16px;
+      border-radius: 4px;
+    }
+    .cancel-confirmation {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+    .cancel-dialog {
+      background-color: #FFFFFF;
+      padding: 16px;
+      border-radius: 4px;
+      text-align: center;
+    }
+    .cancel-dialog button {
+      margin: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>MediBook Appointment Booking</h1>
+
+  <section id="date-picker" class="date-picker">
+    <h2>Date Picker</h2>
+    <div class="calendar">
+      <div class="day available" tabindex="0" aria-label="Available date">
+        1
+        <div class="tooltip">Select an available date</div>
+      </div>
+      <div class="day unavailable" tabindex="-1" aria-disabled="true" aria-label="Unavailable date">2</div>
+      <div class="day available" tabindex="0" aria-label="Available date">
+        3
+        <div class="tooltip">Select an available date</div>
+      </div>
+      <div class="day available" tabindex="0" aria-label="Available date">
+        4
+        <div class="tooltip">Select an available date</div>
+      </div>
+      <div class="day unavailable" tabindex="-1" aria-disabled="true" aria-label="Unavailable date">5</div>
+      <div class="day available" tabindex="0" aria-label="Available date">
+        6
+        <div class="tooltip">Select an available date</div>
+      </div>
+      <div class="day available" tabindex="0" aria-label="Available date">
+        7
+        <div class="tooltip">Select an available date</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="appointment-type" class="appointment-type">
+    <h2>Appointment Type</h2>
+    <label for="appointmentType">Select type:</label>
+    <select id="appointmentType">
+      <option value="gp">GP</option>
+      <option value="specialist">Specialist</option>
+      <option value="nurse">Nurse</option>
+    </select>
+  </section>
+
+  <section id="patient-notes" class="patient-notes">
+    <h2>Patient Notes</h2>
+    <label for="notes">Add notes for your appointment:</label>
+    <textarea id="notes" rows="4" maxlength="200"></textarea>
+    <div class="character-counter">0/200</div>
+  </section>
+
+  <section id="confirmation" class="confirmation">
+    <button class="button" onclick="bookAppointment()">Book Appointment</button>
+  </section>
+
+  <div id="warning-message" class="warning-message warning">
+    <p>Please select an available date.</p>
+  </div>
+
+  <div id="error-message" class="error-message error">
+    <p>Notes cannot be empty when booking an appointment.</p>
+  </div>
+
+  <div id="success-screen" class="success-screen">
+    <h2>Appointment Confirmed</h2>
+    <p>Your appointment is booked successfully.</p>
+    <p>Reference Number: 123456789</p>
+    <button class="button" onclick="cancelAppointment()">Cancel Appointment</button>
+  </div>
+
+  <div id="cancel-confirmation" class="cancel-confirmation" role="dialog" aria-labelledby="cancel-dialog-heading" aria-modal="true">
+    <div class="cancel-dialog">
+      <h2 id="cancel-dialog-heading">Cancel Appointment</h2>
+      <p>Are you sure you want to cancel the appointment?</p>
+      <button class="button" onclick="confirmCancel(true)">Yes</button>
+      <button class="button" onclick="confirmCancel(false)">No</button>
+    </div>
+  </div>
+
+  <script>
+    document.querySelector('.calendar').addEventListener('click', function(e) {
+      if (e.target.classList.contains('available')) {
+        document.getElementById('warning-message').style.display = 'none';
+      } else {
+        document.getElementById('warning-message').style.display = 'block';
+      }
+    });
+
+    document.getElementById('notes').addEventListener('input', function() {
+      const count = this.value.length;
+      document.querySelector('.character-counter').textContent = `${count}/200`;
+    });
+
+    function bookAppointment() {
+      const notes = document.getElementById('notes').value;
+      const warningVisible = document.getElementById('warning-message').style.display !== 'none';
+      if (notes.trim() === '') {
+        document.getElementById('error-message').style.display = 'block';
+      } else if (!warningVisible) {
+        document.getElementById('error-message').style.display = 'none';
+        document.getElementById('success-screen').style.display = 'block';
+      }
+    }
+
+    function cancelAppointment() {
+      document.getElementById('cancel-confirmation').style.display = 'flex';
+      document.querySelector('.cancel-dialog button').focus();
+    }
+
+    function confirmCancel(isConfirmed) {
+      document.getElementById('cancel-confirmation').style.display = 'none';
+      if (isConfirmed) {
+        alert('Appointment canceled.');
+      }
+    }
+  </script>
+</body>
+</html>

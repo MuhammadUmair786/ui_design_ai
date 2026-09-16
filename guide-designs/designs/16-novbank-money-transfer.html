@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Money Transfer Screen - NovBank</title>
+<style>
+  body { margin: 0; font-family: Arial, sans-serif; background-color: #F5F7FA; color: #333333; }
+  .container { max-width: 480px; margin: 16px auto; padding: 16px; background-color: #FFFFFF; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  h1 { font-size: 24px; font-weight: 700; margin-bottom: 16px; }
+  h2 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  label { display: block; margin-bottom: 4px; font-size: 16px; font-weight: 500; }
+  input, select, button { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+  input::placeholder { color: #666666; }
+  button { background-color: #0079FF; color: #FFFFFF; font-weight: 600; cursor: pointer; transition: background-color 200ms; }
+  button:hover { background-color: #005BB5; }
+  button:focus, input:focus, select:focus { outline: 2px solid #0079FF; }
+  .error { color: #FF4D4D; margin-top: -4px; margin-bottom: 8px; }
+  .success { color: #0079FF; }
+  .hidden { display: none; }
+  #autocomplete { max-height: 100px; overflow-y: auto; border: 1px solid #ccc; border-radius: 4px; background-color: #FFFFFF; position: absolute; width: calc(100% - 32px); z-index: 10; }
+  #autocomplete div { padding: 8px; cursor: pointer; }
+  #autocomplete div:hover { background-color: #f0f0f0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Transfer Money</h1>
+  </header>
+
+  <form>
+    <section id="recipient-search">
+      <h2>Recipient Search</h2>
+      <label for="recipient">Search Recipient</label>
+      <input type="text" id="recipient" placeholder="Enter recipient name" autocomplete="off" aria-autocomplete="list">
+      <div id="autocomplete" class="hidden"></div>
+    </section>
+
+    <section id="amount-input">
+      <h2>Amount Input</h2>
+      <label for="amount">Enter Amount</label>
+      <input type="number" id="amount" placeholder="$0.00" aria-label="Enter amount">
+      <div id="balance">Available Balance: $500.00</div>
+      <div id="error-message" class="error hidden">Amount exceeds available balance.</div>
+    </section>
+
+    <section id="reference-note">
+      <h2>Reference Note</h2>
+      <label for="note">Payment Description</label>
+      <input type="text" id="note" placeholder="Enter description">
+    </section>
+
+    <section id="transfer-date">
+      <h2>Transfer Date</h2>
+      <label for="date">Select Transfer Date</label>
+      <select id="date" aria-label="Select transfer date">
+        <option value="immediate">Immediate</option>
+        <option value="tomorrow">Tomorrow</option>
+        <option value="future">Future Date</option>
+      </select>
+    </section>
+
+    <section id="review-transfer">
+      <button type="button" id="review-btn">Review Transfer</button>
+    </section>
+
+    <section id="confirmation-screen" class="hidden">
+      <h2>Confirm Transfer</h2>
+      <div id="transfer-details">Transfer Details: $<span id="transfer-amount"></span> to <span id="transfer-recipient"></span></div>
+      <button type="button" id="confirm-btn">Confirm and Send</button>
+      <button type="button" id="cancel-btn">Cancel</button>
+    </section>
+
+    <section id="success-screen" class="hidden">
+      <h2>Success!</h2>
+      <div class="success">Transaction Reference Number: 123456789</div>
+      <button type="button" id="share-btn">Share Receipt</button>
+    </section>
+  </form>
+</div>
+
+<script>
+  const savedPayees = ['Alice Johnson', 'Bob Smith', 'Charlie Brown'];
+  const recipientInput = document.getElementById('recipient');
+  const autocomplete = document.getElementById('autocomplete');
+
+  recipientInput.addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    autocomplete.innerHTML = '';
+    if (query) {
+      const matches = savedPayees.filter(name => name.toLowerCase().includes(query));
+      matches.forEach(name => {
+        const div = document.createElement('div');
+        div.textContent = name;
+        div.addEventListener('click', function() {
+          recipientInput.value = name;
+          autocomplete.classList.add('hidden');
+        });
+        autocomplete.appendChild(div);
+      });
+      autocomplete.classList.remove('hidden');
+    } else {
+      autocomplete.classList.add('hidden');
+    }
+  });
+
+  document.getElementById('review-btn').addEventListener('click', function() {
+    const amount = parseFloat(document.getElementById('amount').value);
+    const recipient = document.getElementById('recipient').value;
+    if (amount > 500) {
+      document.getElementById('error-message').classList.remove('hidden');
+    } else {
+      document.getElementById('error-message').classList.add('hidden');
+      document.getElementById('transfer-amount').textContent = amount.toFixed(2);
+      document.getElementById('transfer-recipient').textContent = recipient;
+      document.getElementById('confirmation-screen').classList.remove('hidden');
+    }
+  });
+
+  document.getElementById('confirm-btn').addEventListener('click', function() {
+    document.getElementById('confirmation-screen').classList.add('hidden');
+    document.getElementById('success-screen').classList.remove('hidden');
+  });
+
+  document.getElementById('cancel-btn').addEventListener('click', function() {
+    document.getElementById('confirmation-screen').classList.add('hidden');
+  });
+
+  document.getElementById('share-btn').addEventListener('click', function() {
+    alert('Sharing receipt...');
+  });
+</script>
+</body>
+</html>

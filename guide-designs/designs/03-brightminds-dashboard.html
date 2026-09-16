@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrightMinds Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --secondary: #FFD700;
+            --accent: #FF6B6B;
+            --bg: #F8F9FB;
+            --text: #2D3436;
+            --white: #FFFFFF;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Nunito', sans-serif; 
+            background: var(--bg); 
+            color: var(--text);
+            padding-bottom: 80px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 32px 16px; }
+        
+        /* Header */
+        header { margin-bottom: 48px; }
+        h1 { font-size: 48px; font-weight: 700; color: var(--primary); margin-bottom: 16px; }
+        .progress-wrapper { display: flex; flex-direction: column; gap: 8px; }
+        .progress-label { font-size: 20px; font-weight: 600; }
+        .progress-container { background: #e0e0e0; height: 24px; border-radius: 16px; overflow: hidden; }
+        .progress-bar { height: 100%; background: var(--primary); width: 0%; transition: width 1s ease-out; }
+        
+        /* Grid */
+        .grid { display: grid; gap: 32px; grid-template-columns: 1fr; }
+        @media (min-width: 768px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+        .card { 
+            background: var(--white); padding: 32px; border-radius: 24px; 
+            text-align: center; cursor: pointer; transition: transform 0.2s;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.05); border: 2px solid #eee;
+        }
+        .card:hover { transform: scale(1.05); }
+        .card:active { transform: scale(0.95); }
+        .card-icon { font-size: 64px; margin-bottom: 16px; display: block; }
+        .card-label { font-size: 32px; font-weight: 700; }
+
+        /* Rewards */
+        .rewards { margin-top: 64px; overflow-x: auto; display: flex; gap: 24px; padding: 16px 0; }
+        .badge-wrapper { position: relative; flex-shrink: 0; }
+        .badge { width: 80px; height: 80px; background: var(--secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; }
+        .badge-tooltip { 
+            position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+            background: var(--text); color: white; padding: 8px 12px; border-radius: 8px;
+            font-size: 14px; opacity: 0; pointer-events: none; transition: opacity 0.2s; white-space: nowrap;
+        }
+        .badge:hover + .badge-tooltip { opacity: 1; }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 100; }
+        .modal-content { background: white; padding: 32px; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; }
+        .gear-btn { position: fixed; bottom: 32px; right: 32px; background: var(--text); color: white; border: none; padding: 16px; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Hi Alex! Ready to learn?</h1>
+        <div class="progress-wrapper">
+            <span class="progress-label">2 of 5 activities done</span>
+            <div class="progress-container">
+                <div class="progress-bar" id="pb"></div>
+            </div>
+        </div>
+    </header>
+
+    <div class="grid">
+        <div class="card"> <span class="card-icon">🧮</span> <div class="card-label">Math</div> </div>
+        <div class="card"> <span class="card-icon">📖</span> <div class="card-label">Reading</div> </div>
+        <div class="card"> <span class="card-icon">⚛️</span> <div class="card-label">Science</div> </div>
+        <div class="card"> <span class="card-icon">🎨</span> <div class="card-label">Art</div> </div>
+    </div>
+
+    <section class="rewards">
+        <div class="badge-wrapper">
+            <div class="badge" tabindex="0">⭐</div>
+            <div class="badge-tooltip">First Step: 10/01</div>
+        </div>
+        <div class="badge-wrapper">
+            <div class="badge" tabindex="0">📚</div>
+            <div class="badge-tooltip">Super Reader: 10/05</div>
+        </div>
+        <div class="badge-wrapper">
+            <div class="badge" tabindex="0">🏆</div>
+            <div class="badge-tooltip">Math Wiz: 10/12</div>
+        </div>
+    </section>
+</div>
+
+<button class="gear-btn" aria-label="Parental Settings" onclick="document.getElementById('modal').style.display='flex'">⚙️</button>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-content">
+        <h2 id="modal-title">Parental Gate</h2>
+        <p>Solve to continue: 5 + 3 = ?</p>
+        <input type="number" id="math-ans" style="padding: 8px; margin: 16px 0; width: 100px; border-radius: 8px; border: 2px solid #ccc;">
+        <div style="display: flex; gap: 16px; justify-content: center;">
+            <button onclick="checkMath()">Submit</button>
+            <button onclick="document.getElementById('modal').style.display='none'">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.onload = () => {
+        setTimeout(() => {
+            document.getElementById('pb').style.width = '40%';
+        }, 300);
+    };
+    function checkMath() {
+        const val = document.getElementById('math-ans').value;
+        if(val == '8') {
+            alert('Access Granted!');
+            document.getElementById('modal').style.display = 'none';
+        } else {
+            alert('Try again!');
+        }
+    }
+</script>
+
+</body>
+</html>

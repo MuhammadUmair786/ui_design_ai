@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediBook Appointment Booking</title>
+    <style>
+        :root {
+            --primary: #005EB8;
+            --secondary: #41B6E6;
+            --accent: #D50000;
+            --text: #212B32;
+            --bg: #FFFFFF;
+            --border: #212B32;
+            --grey: #F0F4F5;
+        }
+        body { font-family: Arial, sans-serif; color: var(--text); line-height: 1.6; margin: 0; padding: 16px; display: flex; justify-content: center; }
+        .container { max-width: 600px; width: 100%; padding-bottom: 120px; }
+        h1 { font-size: 32px; font-weight: 700; margin-bottom: 24px; }
+        h2 { font-size: 24px; font-weight: 600; margin: 32px 0 16px; }
+        label { display: block; font-weight: 700; margin-bottom: 8px; }
+        .helper { font-size: 14px; color: #505A5F; margin-bottom: 8px; }
+        .char-count { font-size: 14px; color: var(--text); font-weight: 500; margin-top: 4px; }
+        select, textarea { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 0; font-size: 16px; box-sizing: border-box; margin-bottom: 8px; }
+        *:focus { outline: 2px solid var(--primary); outline-offset: 2px; }
+        fieldset { border: none; padding: 0; margin: 0; }
+        legend { font-weight: 700; margin-bottom: 16px; font-size: 16px; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
+        .date-btn { padding: 16px; border: 2px solid var(--border); background: var(--bg); cursor: pointer; text-align: center; font-weight: 700; }
+        .date-btn[aria-pressed="true"] { background: var(--primary); color: white; border-color: var(--primary); }
+        .date-btn:disabled { border-color: #B1B4B6; color: #767676; cursor: not-allowed; }
+        .error { color: var(--accent); font-weight: 700; display: none; margin-top: 8px; border-left: 4px solid var(--accent); padding-left: 8px; }
+        .btn-primary { background: var(--primary); color: #fff; border: none; padding: 16px 32px; font-weight: 700; cursor: pointer; width: 100%; font-size: 18px; }
+        .btn-cancel { background: transparent; color: var(--accent); border: 2px solid var(--accent); padding: 16px 32px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 16px; }
+        .fixed-bottom { position: fixed; bottom: 0; left: 0; right: 0; padding: 16px; background: #fff; border-top: 1px solid #B1B4B6; display: flex; flex-direction: column; align-items: center; }
+        #warning { color: var(--accent); font-weight: 700; margin-top: 8px; display: none; padding: 8px; border: 1px solid var(--accent); }
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 100; }
+        .modal-content { background: white; padding: 24px; max-width: 400px; width: 90%; }
+    </style>
+</head>
+<body>
+
+<main class="container">
+    <h1>Book an appointment</h1>
+
+    <section id="appointment-type">
+        <label for="type">Appointment Type</label>
+        <p class="helper">Select the type of professional you need to see</p>
+        <select id="type">
+            <option>General Practitioner</option>
+            <option>Nurse Practitioner</option>
+            <option>Physiotherapist</option>
+        </select>
+    </section>
+
+    <section id="date-picker">
+        <fieldset>
+            <legend>Schedule Selection</legend>
+            <div class="grid">
+                <button class="date-btn" aria-pressed="false" aria-label="Oct 12, Available" onclick="selectDate(this)">Oct 12</button>
+                <button class="date-btn" aria-pressed="false" aria-label="Oct 13, Available" onclick="selectDate(this)">Oct 13</button>
+                <button class="date-btn" disabled aria-label="Oct 14, Unavailable" onfocus="showWarning()">Oct 14</button>
+            </div>
+        </fieldset>
+        <div id="warning" aria-live="polite">This slot is currently unavailable.</div>
+    </section>
+
+    <section id="patient-notes">
+        <h2>Clinical Details</h2>
+        <label for="notes">Reason for visit</label>
+        <textarea id="notes" minlength="1" maxlength="250" oninput="updateCount(this)"></textarea>
+        <div id="char-count" class="char-count">0/250 characters</div>
+        <div id="error-msg" class="error">Please provide a reason for your visit.</div>
+    </section>
+
+    <div class="fixed-bottom">
+        <button class="btn-primary" onclick="validateForm()">Confirm Appointment</button>
+        <button class="btn-cancel" onclick="document.getElementById('modal').style.display='flex'">Cancel Booking</button>
+    </div>
+</main>
+
+<div id="modal">
+    <div class="modal-content">
+        <h2>Confirm Cancellation</h2>
+        <p>Are you sure you want to cancel this request?</p>
+        <button onclick="document.getElementById('modal').style.display='none'" style="padding: 12px;">Keep it</button>
+        <button onclick="location.reload()" style="background:var(--accent); color:white; padding: 12px; border:none;">Yes, Cancel</button>
+    </div>
+</div>
+
+<script>
+    function selectDate(el) {
+        document.querySelectorAll('.date-btn').forEach(b => b.setAttribute('aria-pressed', 'false'));
+        el.setAttribute('aria-pressed', 'true');
+        document.getElementById('warning').style.display = 'none';
+    }
+
+    function showWarning() {
+        document.getElementById('warning').style.display = 'block';
+    }
+
+    function updateCount(el) {
+        document.getElementById('char-count').innerText = el.value.length + '/250 characters';
+    }
+
+    function validateForm() {
+        const notes = document.getElementById('notes');
+        const err = document.getElementById('error-msg');
+        if(!notes.value.trim()) {
+            notes.style.borderColor = 'var(--accent)';
+            err.style.display = 'block';
+        } else {
+            alert('Appointment successfully booked! Ref: #NHS-9921');
+        }
+    }
+</script>
+</body>
+</html>

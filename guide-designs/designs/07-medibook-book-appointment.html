@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment - MediBook</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: "Frutiger W02", Arial, sans-serif; font-size: 18px; line-height: 1.4; color: #212B32; background: #FFFFFF; max-width: 480px; margin: 0 auto; }
+        .container { padding: 0 16px; }
+        .header { background: #005EB8; color: white; padding: 16px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 100; }
+        .back-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 8px; border-radius: 4px; }
+        .back-btn:focus { outline: 2px solid #FFFFFF; outline-offset: 2px; }
+        .logo { font-size: 18px; font-weight: 700; color: white; }
+        .header-content { flex: 1; }
+        .header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+        .progress { font-size: 14px; opacity: 0.9; }
+        .section { padding: 24px 16px; border-bottom: 1px solid #E8EDEE; }
+        .section h2 { font-size: 28px; font-weight: 700; margin-bottom: 16px; }
+        .field-group { margin-bottom: 24px; }
+        label { display: block; font-weight: 500; margin-bottom: 8px; color: #212B32; }
+        .required::after { content: " *"; color: #D5281B; }
+        select, textarea { width: 100%; padding: 12px; border: 2px solid #768692; border-radius: 4px; font-size: 16px; font-family: inherit; }
+        select:focus, textarea:focus, button:focus { outline: 2px solid #005EB8; outline-offset: 2px; border-color: #005EB8; }
+        .helper { font-size: 14px; color: #768692; margin-top: 8px; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .calendar-nav { background: none; border: 2px solid #005EB8; color: #005EB8; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        .calendar-nav:focus { outline: 2px solid #005EB8; outline-offset: 2px; }
+        .calendar-nav:disabled { opacity: 0.5; cursor: not-allowed; }
+        .month-year { font-size: 18px; font-weight: 500; }
+        .date-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 16px 0; }
+        .date-header { text-align: center; font-size: 14px; font-weight: 500; padding: 8px; }
+        .date-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 4px; cursor: pointer; font-size: 14px; position: relative; border: 2px solid transparent; }
+        .date-cell:focus { outline: 2px solid #005EB8; outline-offset: 2px; }
+        .date-available { background: #E7F5E7; border: 2px solid #00A651; }
+        .date-available::after { content: "✓"; position: absolute; top: 2px; right: 2px; font-size: 10px; color: #00A651; }
+        .date-unavailable { background: #F3F3F3; color: #768692; text-decoration: line-through; border: 2px solid #768692; }
+        .date-unavailable::after { content: "✗"; position: absolute; top: 2px; right: 2px; font-size: 10px; color: #768692; }
+        .date-selected { background: #005EB8; color: white; border: 2px solid #005EB8; }
+        .date-other-month { color: #768692; }
+        .time-slots { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 16px 0; }
+        .time-slot { padding: 12px; border: 2px solid #768692; background: white; border-radius: 4px; cursor: pointer; text-align: center; font-size: 16px; }
+        .time-slot:focus { outline: 2px solid #005EB8; outline-offset: 2px; }
+        .time-slot:hover { border-color: #005EB8; }
+        .time-slot.selected { background: #005EB8; color: white; border-color: #005EB8; }
+        .time-slot:disabled { background: #F3F3F3; color: #768692; cursor: not-allowed; }
+        .legend { display: flex; gap: 16px; font-size: 14px; margin: 16px 0; }
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .legend-icon { width: 16px; height: 16px; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+        .available { background: #00A651; color: white; }
+        .unavailable { background: #768692; color: white; }
+        .textarea-wrapper { position: relative; }
+        .char-counter { position: absolute; bottom: 8px; right: 12px; font-size: 12px; color: #768692; }
+        .error { color: #D5281B; font-size: 14px; margin-top: 8px; }
+        .warning-banner { background: #FFF2E0; border: 1px solid #FF8800; border-radius: 4px; padding: 12px; margin: 16px 0; }
+        .warning-banner::before { content: "⚠️ "; }
+        .btn-group { padding: 16px; background: #F8F8F8; position: sticky; bottom: 0; }
+        .btn-primary { width: 100%; background: #005EB8; color: white; border: none; padding: 16px; border-radius: 4px; font-size: 18px; font-weight: 500; cursor: pointer; margin-bottom: 8px; }
+        .btn-primary:focus { outline: 2px solid #FFFFFF; outline-offset: 2px; }
+        .btn-primary:hover { background: #004494; }
+        .btn-primary:disabled { background: #768692; cursor: not-allowed; }
+        .btn-secondary { background: none; border: none; color: #005EB8; text-decoration: underline; cursor: pointer; display: block; margin: 0 auto; }
+        .btn-secondary:focus { outline: 2px solid #005EB8; outline-offset: 2px; }
+        .loading { position: relative; }
+        .loading::after { content: ""; position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; border: 2px solid transparent; border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: translateY(-50%) rotate(0deg); } 100% { transform: translateY(-50%) rotate(360deg); } }
+        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; border-radius: 8px; padding: 24px; margin: 16px; max-width: 400px; text-align: center; position: relative; }
+        .modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 24px; cursor: pointer; color: #768692; }
+        .modal-close:focus { outline: 2px solid #005EB8; outline-offset: 2px; }
+        .modal h2 { color: #D5281B; margin-bottom: 16px; font-size: 28px; font-weight: 700; }
+        .modal-buttons { display: flex; gap: 8px; margin-top: 24px; }
+        .modal-buttons button { flex: 1; padding: 12px; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        .btn-danger { background: #D5281B; color: white; border: none; }
+        .btn-danger:focus { outline: 2px solid #FFFFFF; outline-offset: 2px; }
+        .btn-outline { background: white; color: #005EB8; border: 2px solid #005EB8; }
+        .btn-outline:focus { outline: 2px solid #005EB8; outline-offset: 2px; }
+        .success-screen { display: none; text-align: center; padding: 48px 16px; }
+        .success-screen h1 { font-size: 28px; font-weight: 700; }
+        .success-icon { font-size: 64px; color: #00A651; margin-bottom: 24px; }
+        .appointment-card { background: #F8F8F8; border-radius: 8px; padding: 24px; margin: 24px 0; text-align: left; }
+        .appointment-card h3 { color: #005EB8; margin-bottom: 16px; font-size: 28px; font-weight: 700; }
+        .appointment-detail { margin-bottom: 8px; }
+        .reference { background: #E7F5E7; padding: 16px; border-radius: 4px; margin: 24px 0; font-weight: 500; }
+        .hidden { display: none; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="back-btn" onclick="goBack()" aria-label="Go back">←</button>
+        <div class="logo">MediBook</div>
+        <div class="header-content">
+            <h1>Book Appointment</h1>
+            <div class="progress">Step 1 of 2</div>
+        </div>
+    </div>
+
+    <div id="booking-form">
+        <div class="section">
+            <div class="field-group">
+                <label for="appointment-type" class="required">Appointment Type</label>
+                <select id="appointment-type" required onkeydown="handleDropdownKeys(event)" aria-describedby="type-helper">
+                    <option value="">Select appointment type</option>
+                    <option value="gp">GP - General health concerns</option>
+                    <option value="specialist">Specialist - Referred conditions</option>
+                    <option value="nurse">Nurse - Routine care & vaccinations</option>
+                </select>
+                <div id="type-helper" class="helper">Choose the healthcare provider most suitable for your needs</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Select Date & Time</h2>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-icon available">✓</div>
+                    <span>Available</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-icon unavailable">✗</div>
+                    <span>Unavailable</span>
+                </div>
+            </div>
+            
+            <div class="calendar-header">
+                <button class="calendar-nav" onclick="changeMonth(-1)" aria-label="Previous month">‹</button>
+                <div class="month-year" id="current-month">December 2024</div>
+                <button class="calendar-nav" onclick="changeMonth(1)" aria-label="Next month">›</button>
+            </div>
+            
+            <div class="date-grid" id="calendar-grid">
+                <div class="date-header">Mon</div>
+                <div class="date-header">Tue</div>
+                <div class="date-header">Wed</div>
+                <div class="date-header">Thu</div>
+                <div class="date-header">Fri</div>
+                <div class="date-header">Sat</div>
+                <div class="date-header">Sun</div>
+            </div>
+
+            <div id="warning-banner" class="warning-banner hidden">
+                Please select an available date to see time slots
+            </div>
+
+            <div id="time-slots" class="time-slots hidden">
+                <button class="time-slot" onclick="selectTime(this, '09:00')">09:00</button>
+                <button class="time-slot" onclick="selectTime(this, '09:30')">09:30</button>
+                <button class="time-slot" onclick="selectTime(this, '10:00')">10:00</button>
+                <button class="time-slot" onclick="selectTime(this, '10:30')" disabled>10:30</button>
+                <button class="time-slot" onclick="selectTime(this, '11:00')">11:00</button>
+                <button class="time-slot" onclick="selectTime(this, '11:30')">11:30</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="field-group">
+                <label for="patient-notes" class="required">Reason for Appointment</label>
+                <div class="textarea-wrapper">
+                    <textarea id="patient-notes" rows="4" maxlength="500" placeholder="Please describe your symptoms or reason for this appointment..." oninput="updateCounter()" aria-describedby="notes-helper notes-error" aria-invalid="false"></textarea>
+                    <div class="char-counter">0/500</div>
+                </div>
+                <div id="notes-helper" class="helper">Include your main symptoms, when they started, and any relevant medical history</div>
+                <div id="notes-error" class="error hidden" role="alert">Please provide a reason for your appointment</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="success-screen" class="success-screen">
+        <div class="success-icon">✓</div>
+        <h1>Appointment Confirmed</h1>
+        <div class="appointment-card">
+            <h3>Your Appointment</h3>
+            <div class="appointment-detail"><strong>Date:</strong> <span id="conf-date"></span></div>
+            <div class="appointment-detail"><strong>Time:</strong> <span id="conf-time"></span></div>
+            <div class="appointment-detail"><strong>Type:</strong> <span id="conf-type"></span></div>
+        </div>
+        <div class="reference">Reference: #APT<span id="ref-number"></span></div>
+        <button class="btn-primary" onclick="addToCalendar()">Add to Calendar</button>
+        <button class="btn-secondary" onclick="resetForm()">Done</button>
+        <button class="btn-secondary" onclick="showCancelModal()" style="color: #D5281B;">Cancel This Appointment</button>
+    </div>
+
+    <div class="btn-group">
+        <button id="book-btn" class="btn-primary" onclick="bookAppointment()">Book Appointment</button>
+        <button class="btn-secondary" onclick="cancelBooking()">Cancel</button>
+    </div>
+
+    <div id="cancel-modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeCancelModal()" aria-label="Close dialog">×</button>
+            <h2>⚠️ Cancel Appointment?</h2>
+            <p>Are you sure you want to cancel this appointment? This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <button class="btn-danger" onclick="confirmCancel()">Cancel Appointment</button>
+                <button class="btn-outline" onclick="closeCancelModal()">Keep Appointment</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="live-region" class="sr-only" role="status" aria-live="polite"></div>
+
+    <script>
+        let selectedDate = null, selectedTime = null;
+        let currentMonth = 11; // December (0-based)
+        let currentYear = 2024;
+        
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        
+        function generateCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            const monthYear = document.getElementById('current-month');
+            
+            // Clear existing dates
+            const dateHeaders = grid.querySelectorAll('.date-header');
+            grid.innerHTML = '';
+            dateHeaders.forEach(header => grid.appendChild(header));
+            
+            monthYear.textContent = `${months[currentMonth]} ${currentYear}`;
+            
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const startDay = firstDay === 0 ? 6 : firstDay - 1; // Adjust for Monday start
+            
+            // Previous month days
+            const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+            const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
+            
+            for (let i = startDay - 1; i >= 0; i--) {
+                const day = daysInPrevMonth - i;
+                const cell = document.createElement('div');
+                cell.className = 'date-cell date-other-month';
+                cell.textContent = day;
+                grid.appendChild(cell);
+            }
+            
+            // Current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const cell = document.createElement('div');
+                cell.className = 'date-cell';
+                cell.textContent = day;
+                cell.tabIndex = 0;
+                
+                // Mock availability - make some days available
+                if (day % 3 === 1 || day % 3 === 2) {
+                    cell.classList.add('date-available');
+                    cell.onclick = () => selectDate(cell, day);
+                    cell.onkeydown = (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            selectDate(cell, day);
+                        }
+                    };
+                } else {
+                    cell.classList.add('date-unavailable');
+                    cell.onclick = () => selectUnavailableDate();
+                }
+                
+                grid.appendChild(cell);
+            }
+            
+            // Next month days
+            const totalCells = grid.children.length - 7; // Subtract headers
+            const remainingCells = 42 - totalCells; // 6 weeks * 7 days
+            for (let day = 1; day <= remainingCells; day++) {
+                const cell = document.createElement('div');
+                cell.className = 'date-cell date-other-month';
+                cell.textContent = day;
+                grid.appendChild(cell);
+            }
+        }
+        
+        function changeMonth(direction) {
+            currentMonth += direction;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            generateCalendar();
+        }
+        
+        function selectDate(el, date) {
+            document.querySelectorAll('.date-cell').forEach(cell => cell.classList.remove('date-selected'));
+            el.classList.add('date-selected');
+            selectedDate = date;
+            document.getElementById('time-slots').classList.remove('hidden');
+            document.getElementById('warning-banner').classList.add('hidden');
+            announceToScreenReader(`Date ${date} ${months[currentMonth]} selected. Available time slots are now displayed.`);
+        }
+        
+        function selectUnavailableDate() {
+            document.getElementById('warning-banner').classList.remove('hidden');
+            document.getElementById('time-slots').classList.add('hidden');
+            announceToScreenReader('This date is not available. Please select an available date.');
+        }
+        
+        function selectTime(el, time) {
+            if (el.disabled) return;
+            document.querySelectorAll('.time-slot').forEach(slot => slot.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedTime = time;
+            announceToScreenReader(`Time slot ${time} selected.`);
+        }
+        
+        function handleDropdownKeys(event) {
+            // Basic arrow key navigation for dropdown
+            const select = event.target;
+            if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+                // Let native select handle this
+                return;
+            }
+        }
+        
+        function updateCounter() {
+            const textarea = document.getElementById('patient-notes');
+            const counter = document.querySelector('.char-counter');
+            counter.textContent = `${textarea.value.length}/500`;
+        }
+        
+        function validateForm() {
+            let isValid = true;
+            const appointmentType = document.getElementById('appointment-type').value;
+            const notes = document.getElementById('patient-notes').value.trim();
+            const notesField = document.getElementById('patient-notes');
+            
+            if (!appointmentType || !selectedDate || !selectedTime || !notes) {
+                isValid = false;
+            }
+            
+            if (!notes) {
+                document.getElementById('notes-error').classList.remove('hidden');
+                notesField.setAttribute('aria-invalid', 'true');
+                announceToScreenReader('Please provide a reason for your appointment.');
+                isValid = false;
+            } else {
+                document.getElementById('notes-error').classList.add('hidden');
+                notesField.setAttribute('aria-invalid', 'false');
+            }
+            
+            return isValid;
+        }
+        
+        function announceToScreenReader(message) {
+            const liveRegion = document.getElementById('live-region');
+            liveRegion.textContent = message;
+        }
+        
+        function bookAppointment() {
+            if (!validateForm()) {
+                announceToScreenReader('Please complete all required fields and select a date and time.');
+                return;
+            }
+            
+            const btn = document.getElementById('book-btn');
+            btn.classList.add('loading');
+            btn.disabled = true;
+            btn.textContent = 'Booking...';
+            
+            setTimeout(() => {
+                const appointmentType = document.getElementById('appointment-type');
+                const typeText = appointmentType.options[appointmentType.selectedIndex].text.split(' - ')[0];
+                
+                document.getElementById('conf-date').textContent = `${months[currentMonth]} ${selectedDate}, ${currentYear}`;
+                document.getElementById('conf-time').textContent = selectedTime;
+                document.getElementById('conf-type').textContent = typeText;
+                document.getElementById('ref-number').textContent = Math.random().toString(36).substr(2, 8).toUpperCase();
+                
+                document.getElementById('booking-form').style.display = 'none';
+                document.querySelector('.btn-group').style.display = 'none';
+                document.getElementById('success-screen').style.display = 'block';
+                announceToScreenReader('Appointment successfully booked. Confirmation details are now displayed.');
+            }, 2000);
+        }
+        
+        function showCancelModal() {
+            document.getElementById('cancel-modal').style.display = 'flex';
+        }
+        
+        function closeCancelModal() {
+            document.getElementById('cancel-modal').style.display = 'none';
+        }
+        
+        function confirmCancel() {
+            announceToScreenReader('Appointment cancelled.');
+            resetForm();
+            closeCancelModal();
+        }
+        
+        function resetForm() {
+            location.reload();
+        }
+        
+        function addToCalendar() {
+            announceToScreenReader('Calendar event created.');
+        }
+        
+        function goBack() {
+            history.back();
+        }
+        
+        function cancelBooking() {
+            if (confirm('Are you sure you want to cancel booking this appointment?')) {
+                resetForm();
+            }
+        }
+        
+        document.getElementById('cancel-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeCancelModal();
+        });
+        
+        // Initialize calendar on load
+        generateCalendar();
+    </script>
+</body>
+</html>

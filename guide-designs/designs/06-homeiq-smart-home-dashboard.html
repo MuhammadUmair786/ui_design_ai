@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HomeIQ Smart Home Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap');
+  body { margin: 0; font-family: 'Roboto', sans-serif; background: #FFFFFF; color: #000000; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 16px; box-sizing: border-box; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 2px solid #6200EE; }
+  header div { text-align: center; }
+  header h1 { font-size: 32px; font-weight: 700; color: #6200EE; margin: 0; }
+  header p { font-size: 16px; font-weight: 400; margin: 4px 0; }
+  nav { display: flex; overflow-x: auto; margin: 16px 0; padding-bottom: 8px; border-bottom: 2px solid #03DAC6; }
+  nav button { flex: 1 0 auto; padding: 8px 16px; background: #6200EE; color: #FFFFFF; border: none; border-radius: 4px; font-size: 16px; font-weight: 400; margin-right: 8px; cursor: pointer; transition: background 200ms; }
+  nav button:focus, nav button:hover { background: #03DAC6; outline: none; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 16px; }
+  .card { background: #FFFFFF; border: 1px solid #6200EE; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+  .card h2 { font-size: 24px; font-weight: 600; margin: 0 0 8px; }
+  .card p { font-size: 16px; font-weight: 400; margin: 8px 0; }
+  .toggle-button { display: flex; align-items: center; }
+  .toggle-button input { margin-right: 8px; }
+  .temperature-control { display: flex; flex-direction: column; }
+  .temperature-controls { display: flex; justify-content: space-between; align-items: center; }
+  .temperature-controls button { background: #6200EE; color: #FFFFFF; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; transition: background 200ms; }
+  .temperature-controls button:focus, .temperature-controls button:hover { background: #03DAC6; outline: none; }
+  .scenes { display: flex; justify-content: space-between; }
+  .scene-button { flex: 1 0 auto; padding: 12px; background: #FF0266; color: #FFFFFF; border: none; border-radius: 4px; font-size: 16px; font-weight: 400; margin-right: 8px; cursor: pointer; transition: background 200ms; }
+  .scene-button:focus, .scene-button:hover { background: #6200EE; outline: none; }
+  .notification { background: #FFF3CD; border: 1px solid #FFEEBA; padding: 16px; margin-bottom: 16px; border-radius: 8px; }
+  .notification h2 { font-size: 24px; font-weight: 600; margin: 0; }
+  .notification p { font-size: 16px; font-weight: 400; margin: 8px 0; }
+  .notification button { background: none; border: none; color: #856404; cursor: pointer; font-size: 16px; font-weight: 400; padding: 0; }
+  @media (max-width: 768px) {
+    .cards { grid-template-columns: 1fr; }
+    nav { flex-direction: column; overflow-x: auto; }
+  }
+  .aria-focus-visible:focus { outline: 2px solid #03DAC6; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div aria-label="Dashboard Title">
+        <h1>HomeIQ Dashboard</h1>
+      </div>
+      <div aria-label="Current Time and Date">
+        <p id="time">12:00 PM</p>
+        <p id="date">March 10, 2023</p>
+      </div>
+      <div aria-label="Active Devices Summary">
+        <p>3 Active Devices</p>
+      </div>
+    </header>
+
+    <nav aria-label="Room Selector">
+      <button type="button" class="aria-focus-visible">Living Room</button>
+      <button type="button" class="aria-focus-visible">Bedroom</button>
+      <button type="button" class="aria-focus-visible">Kitchen</button>
+      <button type="button" class="aria-focus-visible">Garden</button>
+    </nav>
+
+    <main>
+      <div class="cards" role="region" aria-label="Device Cards">
+        <div class="card">
+          <h2>Smart Light</h2>
+          <p>Status: <span id="light-status">On</span></p>
+          <div class="toggle-button">
+            <input type="checkbox" id="light-toggle" checked aria-labelledby="light-status">
+            <label for="light-toggle">Toggle</label>
+          </div>
+        </div>
+        <div class="card temperature-control">
+          <h2>Thermostat</h2>
+          <p>Current: <span id="current-temp">22°C</span></p>
+          <p>Target: <span id="target-temp">24°C</span></p>
+          <div class="temperature-controls">
+            <button type="button" aria-label="Increase Temperature" class="aria-focus-visible">+</button>
+            <button type="button" aria-label="Decrease Temperature" class="aria-focus-visible">-</button>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Energy Usage</h2>
+          <p>Today: 15 kWh</p>
+          <p>Cost: £3.20</p>
+        </div>
+      </div>
+
+      <div class="scenes" role="region" aria-label="Preset Scenes">
+        <button class="scene-button aria-focus-visible" type="button" aria-label="Activate Morning Scene">Morning</button>
+        <button class="scene-button aria-focus-visible" type="button" aria-label="Activate Away Scene">Away</button>
+        <button class="scene-button aria-focus-visible" type="button" aria-label="Activate Evening Scene">Evening</button>
+        <button class="scene-button aria-focus-visible" type="button" aria-label="Activate Sleep Scene">Sleep</button>
+      </div>
+
+      <div class="notification" role="alert" aria-label="Notifications">
+        <h2>Alert</h2>
+        <p>Device Offline: Smart Speaker</p>
+        <p>Unusual Energy Usage Detected.</p>
+        <button type="button" class="aria-focus-visible">Dismiss</button>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    document.querySelectorAll('nav button').forEach(button => {
+      button.addEventListener('click', () => {
+        alert('Switching rooms');
+      });
+    });
+
+    document.querySelector('.toggle-button input').addEventListener('change', (e) => {
+      document.getElementById('light-status').textContent = e.target.checked ? 'On' : 'Off';
+    });
+
+    document.querySelector('.temperature-controls button:nth-child(1)').addEventListener('click', () => {
+      let current = parseInt(document.getElementById('current-temp').textContent);
+      document.getElementById('current-temp').textContent = `${current + 1}°C`;
+    });
+
+    document.querySelector('.temperature-controls button:nth-child(2)').addEventListener('click', () => {
+      let current = parseInt(document.getElementById('current-temp').textContent);
+      document.getElementById('current-temp').textContent = `${current - 1}°C`;
+    });
+
+    document.querySelectorAll('.scene-button').forEach(button => {
+      button.addEventListener('click', () => {
+        alert('Scene activated');
+      });
+    });
+
+    document.querySelector('.notification button').addEventListener('click', () => {
+      document.querySelector('.notification').style.display = 'none';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovBank Transfer</title>
+    <style>
+        :root {
+            --primary: #0055FF;
+            --secondary: #E8EBF0;
+            --accent: #FF3B30;
+            --bg: #FFFFFF;
+            --text: #1A1D21;
+            --helper: #6B7280;
+            --font: 'Inter', system-ui, sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font); color: var(--text); background: #F4F5F7; padding: 24px; }
+        .app-container { max-width: 480px; margin: 0 auto; background: var(--bg); min-height: 90vh; border-radius: 16px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        h2 { font-size: 20px; font-weight: 600; margin-bottom: 24px; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 12px; }
+        input, textarea { width: 100%; height: 56px; padding: 0 16px; border: 1px solid var(--secondary); border-radius: 8px; font-size: 16px; outline: none; }
+        input:focus, textarea:focus { border-color: var(--primary); }
+        textarea { height: 80px; padding: 16px; resize: none; }
+        .btn { width: 100%; height: 56px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: var(--secondary); color: var(--text); margin-top: 8px; }
+        .error { color: var(--accent); font-size: 12px; font-weight: 600; margin-top: 4px; display: none; }
+        .helper { font-size: 12px; font-weight: 400; color: var(--helper); margin-top: 4px; }
+        .hidden { display: none; }
+        .list-item { padding: 16px 0; border-bottom: 1px solid var(--secondary); cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+        .list-item:last-child { border-bottom: none; }
+        .summary-card { border: 1px solid var(--secondary); padding: 16px; border-radius: 8px; margin-bottom: 16px; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        .summary-row:last-child { margin-bottom: 0; }
+        .segmented { display: flex; gap: 8px; margin-bottom: 16px; }
+        .seg-btn { flex: 1; padding: 12px; border: 1px solid var(--secondary); border-radius: 8px; text-align: center; font-size: 12px; cursor: pointer; }
+        .seg-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .search-wrapper { position: relative; }
+        .search-wrapper::before { content: '🔍'; position: absolute; left: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+        .search-wrapper input { padding-left: 44px; }
+    </style>
+</head>
+<body>
+    <div class="app-container" id="app">
+        <section id="recipient_input">
+            <h2>Transfer To</h2>
+            <div class="form-group">
+                <div class="search-wrapper">
+                    <input type="text" id="search" placeholder="Search name or IBAN..." aria-label="Search recipient">
+                </div>
+            </div>
+            <label>Recent</label>
+            <div id="contacts">
+                <div class="list-item" role="button" tabindex="0" onclick="document.getElementById('recipient_input').classList.add('hidden'); document.getElementById('transaction_details').classList.remove('hidden');">
+                    <span>Alex Rivera</span>
+                    <span style="color:var(--helper)">**** 4492</span>
+                </div>
+                <div class="list-item" role="button" tabindex="0" onclick="document.getElementById('recipient_input').classList.add('hidden'); document.getElementById('transaction_details').classList.remove('hidden');">
+                    <span>Sarah Jenkins</span>
+                    <span style="color:var(--helper)">**** 8821</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="transaction_details" class="hidden">
+            <h2>Amount and Schedule</h2>
+            <div class="form-group">
+                <label for="amount">Amount</label>
+                <input type="number" id="amount" placeholder="$0.00" aria-invalid="false" aria-describedby="error-msg">
+                <p class="helper">Available: $2,450.00</p>
+                <p class="error" id="error-msg" aria-live="polite">Insufficient funds for this transfer.</p>
+            </div>
+            <div class="form-group">
+                <label for="reference">Reference (Optional)</label>
+                <textarea id="reference" placeholder="What's this for?"></textarea>
+            </div>
+            <label>Schedule</label>
+            <div class="segmented">
+                <div class="seg-btn active">Now</div>
+                <div class="seg-btn">Tomorrow</div>
+                <div class="seg-btn">Custom</div>
+            </div>
+            <button class="btn btn-primary" aria-label="Review transfer" onclick="showReview()">Review Transfer</button>
+        </section>
+
+        <section id="confirmation_modal" class="hidden">
+            <h2>Review Details</h2>
+            <div class="summary-card">
+                <div class="summary-row"><span>Recipient</span><strong>Alex Rivera</strong></div>
+                <div class="summary-row"><span>Amount</span><strong>$500.00</strong></div>
+                <div class="summary-row"><span>Date</span><strong>Today</strong></div>
+            </div>
+            <button class="btn btn-primary" onclick="showSuccess()">Confirm & Send</button>
+            <button class="btn btn-secondary" onclick="location.reload()">Cancel</button>
+        </section>
+
+        <section id="success_state" class="hidden" style="text-align: center; padding-top: 40px;">
+            <div style="font-size: 64px; margin-bottom: 16px;">✅</div>
+            <h2>Transfer Complete</h2>
+            <p style="font-size: 14px; color: var(--helper);">Ref: NB-9928374-X</p>
+            <button class="btn btn-primary" style="margin-top:24px" onclick="alert('Shared!')">Share Receipt</button>
+        </section>
+    </div>
+
+    <script>
+        const amountInput = document.getElementById('amount');
+        const errorMsg = document.getElementById('error-msg');
+        
+        amountInput.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            if(val > 2450) {
+                errorMsg.style.display = 'block';
+                amountInput.setAttribute('aria-invalid', 'true');
+            } else {
+                errorMsg.style.display = 'none';
+                amountInput.setAttribute('aria-invalid', 'false');
+            }
+        });
+
+        function showReview() {
+            document.getElementById('transaction_details').classList.add('hidden');
+            document.getElementById('confirmation_modal').classList.remove('hidden');
+        }
+
+        function showSuccess() {
+            document.getElementById('confirmation_modal').classList.add('hidden');
+            document.getElementById('success_state').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

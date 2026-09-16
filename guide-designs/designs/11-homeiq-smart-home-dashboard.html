@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeIQ Smart Home Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+            background-color: #1A1D23;
+            color: #FFFFFF;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1024px;
+            margin: 0 auto;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+            min-height: 100vh;
+        }
+        
+        .header {
+            grid-column: 1 / -1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header-left {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .clock {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .date {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2ECC71;
+        }
+        
+        .wifi-icon {
+            width: 20px;
+            height: 20px;
+            background: currentColor;
+            mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M12 6c3.87 0 7.25 1.63 9.74 4.25l1.42-1.42C20.88 6.55 16.64 4.5 12 4.5S3.12 6.55.84 8.83l1.42 1.42C4.75 7.63 8.13 6 12 6zm0 4c2.32 0 4.45.95 5.97 2.47l1.42-1.42C17.64 9.3 14.93 8 12 8s-5.64 1.3-7.39 3.05l1.42 1.42C7.55 10.95 9.68 10 12 10zm0 4c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z'/%3E%3C/svg%3E") center/contain;
+        }
+        
+        .room-tabs {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 4px;
+        }
+        
+        .room-tab {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: #FFFFFF;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .room-tab:focus {
+            outline: 2px solid #FF6B35;
+            outline-offset: 2px;
+        }
+        
+        .room-tab.active {
+            background: #FF6B35;
+        }
+        
+        .room-tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .thermostat-card {
+            grid-column: 1 / 7;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 32px;
+            text-align: center;
+        }
+        
+        .thermostat-dial {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF6B35, #FF8F65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            touch-action: none;
+        }
+        
+        .thermostat-inner {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: #1A1D23;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .current-temp {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .target-temp {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        
+        .temp-controls {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .temp-btn {
+            width: 48px;
+            height: 48px;
+            border: 2px solid #FF6B35;
+            background: transparent;
+            color: #FF6B35;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .temp-btn:hover {
+            background: #FF6B35;
+            color: #FFFFFF;
+        }
+        
+        .temp-btn:focus {
+            outline: 2px solid #FF6B35;
+            outline-offset: 2px;
+        }
+        
+        .mode-indicator {
+            margin-top: 16px;
+            padding: 8px 16px;
+            background: rgba(74, 144, 226, 0.2);
+            border-radius: 20px;
+            font-size: 12px;
+            color: #4A90E2;
+        }
+        
+        .device-grid {
+            grid-column: 7 / -1;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        
+        .device-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .device-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .device-card:focus {
+            outline: 2px solid #FF6B35;
+            outline-offset: 2px;
+        }
+        
+        .device-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .device-name {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .device-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2ECC71;
+        }
+        
+        .device-status.offline {
+            background: #FF6B35;
+        }
+        
+        .device-toggle {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+        
+        .toggle-input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.2);
+            transition: 0.2s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background: white;
+            transition: 0.2s;
+            border-radius: 50%;
+        }
+        
+        .toggle-input:focus + .toggle-slider {
+            box-shadow: 0 0 0 2px #FF6B35;
+        }
+        
+        .toggle-input:checked + .toggle-slider {
+            background: #FF6B35;
+        }
+        
+        .toggle-input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+        
+        .device-expanded {
+            max-height: 300px;
+        }
+        
+        .device-controls {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            max-height: 0;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .device-card.expanded .device-controls {
+            opacity: 1;
+            max-height: 200px;
+        }
+        
+        .control-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .control-slider {
+            width: 80px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            appearance: none;
+        }
+        
+        .control-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #FF6B35;
+            cursor: pointer;
+        }
+        
+        .energy-card {
+            grid-column: 1 / 5;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        
+        .energy-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .energy-stats {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .energy-stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2ECC71;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+        
+        .chart-placeholder {
+            height: 60px;
+            background: linear-gradient(90deg, #2ECC71, #4A90E2);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-placeholder:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 255, 255, 0.1) 10px,
+                rgba(255, 255, 255, 0.1) 11px
+            );
+        }
+        
+        .efficiency-tips-btn {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ECC71;
+            color: #2ECC71;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+        }
+        
+        .efficiency-tips-btn:hover {
+            background: rgba(46, 204, 113, 0.3);
+        }
+        
+        .efficiency-tips-btn:focus {
+            outline: 2px solid #2ECC71;
+            outline-offset: 2px;
+        }
+        
+        .scenes-card {
+            grid-column: 5 / 9;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        
+        .scenes-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .scenes-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .scene-btn {
+            padding: 16px 12px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: #FFFFFF;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        
+        .scene-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .scene-btn:focus {
+            outline: 2px solid #FF6B35;
+            outline-offset: 2px;
+        }
+        
+        .scene-btn.active {
+            background: #4A90E2;
+        }
+        
+        .notifications-card {
+            grid-column: 9 / -1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        
+        .notifications-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .notification-item {
+            padding: 12px;
+            background: rgba(255, 107, 53, 0.1);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .notification-text {
+            font-size: 14px;
+            flex: 1;
+        }
+        
+        .notification-time {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-right: 8px;
+        }
+        
+        .dismiss-btn {
+            width: 20px;
+            height: 20px;
+            border: none;
+            background: transparent;
+            color: #FFFFFF;
+            cursor: pointer;
+            opacity: 0.7;
+            font-size: 16px;
+        }
+        
+        .dismiss-btn:focus {
+            outline: 2px solid #FF6B35;
+            outline-offset: 2px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: #1A1D23;
+            margin: 15% auto;
+            padding: 32px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-header {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .modal-close {
+            color: #FFFFFF;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: -10px;
+        }
+        
+        .refresh-indicator {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2ECC71;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .refresh-indicator.show {
+            opacity: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .thermostat-card,
+            .device-grid,
+            .energy-card,
+            .scenes-card,
+            .notifications-card {
+                grid-column: 1 / -1;
+            }
+            
+            .device-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .room-tabs {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="refresh-indicator" id="refreshIndicator">Refreshing devices...</div>
+    
+    <div class="container" id="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="clock" id="clock">14:23</div>
+                <div class="date" id="date">Tuesday, March 19</div>
+            </div>
+            <div class="header-right">
+                <div class="status-item">
+                    <div class="status-dot"></div>
+                    <span id="deviceCount">12 devices</span>
+                </div>
+                <div class="wifi-icon" role="img" aria-label="WiFi connected"></div>
+            </div>
+        </header>
+
+        <!-- Room Tabs -->
+        <nav class="room-tabs" role="tablist" aria-label="Room selection">
+            <button class="room-tab active" data-room="living" role="tab" aria-selected="true" aria-controls="deviceGrid">🛋️ Living Room</button>
+            <button class="room-tab" data-room="bedroom" role="tab" aria-selected="false" aria-controls="deviceGrid">🛏️ Bedroom</button>
+            <button class="room-tab" data-room="kitchen" role="tab" aria-selected="false" aria-controls="deviceGrid">🍳 Kitchen</button>
+            <button class="room-tab" data-room="garden" role="tab" aria-selected="false" aria-controls="deviceGrid">🌿 Garden</button>
+        </nav>
+
+        <!-- Thermostat Control -->
+        <div class="thermostat-card">
+            <div class="thermostat-dial" id="thermostat" role="slider" aria-label="Temperature control" aria-valuemin="10" aria-valuemax="30" aria-valuenow="21" tabindex="0">
+                <div class="thermostat-inner">
+                    <div class="current-temp" id="currentTemp">22°</div>
+                    <div class="target-temp">Target: <span id="targetTemp">21°C</span></div>
+                </div>
+            </div>
+            <div class="temp-controls">
+                <button class="temp-btn" id="tempDown" aria-label="Decrease temperature">−</button>
+                <button class="temp-btn" id="tempUp" aria-label="Increase temperature">+</button>
+            </div>
+            <div class="mode-indicator">Heating</div>
+        </div>
+
+        <!-- Device Grid -->
+        <div class="device-grid" id="deviceGrid" role="tabpanel" aria-labelledby="activeRoomTab">
+            <!-- Devices will be populated by JavaScript -->
+        </div>
+
+        <!-- Energy Card -->
+        <div class="energy-card">
+            <div class="energy-header">Today's Usage</div>
+            <div class="energy-stats">
+                <div class="energy-stat">
+                    <div class="stat-value">24.7</div>
+                    <div class="stat-label">kWh</div>
+                </div>
+                <div class="energy-stat">
+                    <div class="stat-value">£4.12</div>
+                    <div class="stat-label">Cost</div>
+                </div>
+            </div>
+            <div class="chart-placeholder" role="img" aria-label="Energy usage chart"></div>
+            <div style="font-size: 12px; opacity: 0.7; margin-bottom: 12px;">↓ 8% vs yesterday</div>
+            <button class="efficiency-tips-btn" id="efficiencyTips">💡 Energy efficiency tips</button>
+        </div>
+
+        <!-- Scenes -->
+        <div class="scenes-card">
+            <div class="scenes-header">Scenes</div>
+            <div class="scenes-grid">
+                <button class="scene-btn" data-scene="morning" aria-label="Activate morning scene">☀️ Morning</button>
+                <button class="scene-btn active" data-scene="away" aria-label="Activate away scene">🚶 Away</button>
+                <button class="scene-btn" data-scene="evening" aria-label="Activate evening scene">🌅 Evening</button>
+                <button class="scene-btn" data-scene="sleep" aria-label="Activate sleep scene">🌙 Sleep</button>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="notifications-card">
+            <div class="notifications-header">Alerts</div>
+            <div class="notification-item">
+                <div class="notification-text">Kitchen motion detected</div>
+                <div class="notification-time">2m ago</div>
+                <button class="dismiss-btn" aria-label="Dismiss notification">×</button>
+            </div>
+            <div class="notification-item">
+                <div class="notification-text">Front door unlocked</div>
+                <div class="notification-time">5m ago</div>
+                <button class="dismiss-btn" aria-label="Dismiss notification">×</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scene Customization Modal -->
+    <div id="sceneModal" class="modal" role="dialog" aria-labelledby="modalHeader" aria-hidden="true">
+        <div class="modal-content">
+            <span class="modal-close" id="modalClose">&times;</span>
+            <h2 class="modal-header" id="modalHeader">Customize Scene</h2>
+            <p>Configure devices and settings for this scene.</p>
+            <div style="margin-top: 20px;">
+                <button style="background: #FF6B35; border: none; color: white; padding: 12px 24px; border-radius: 8px; cursor: pointer;">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Device data for each room
+        const roomDevices = {
+            living: [
+                { name: 'Smart Lights', type: 'light', status: 'online', state: true },
+                { name: 'TV', type: 'tv', status: 'online', state: false },
+                { name: 'Speaker', type: 'audio', status: 'online', state: true },
+                { name: 'Air Purifier', type: 'air', status: 'online', state: false }
+            ],
+            bedroom: [
+                { name: 'Bedside Lamp', type: 'light', status: 'online', state: true },
+                { name: 'Smart Blinds', type: 'blind', status: 'online', state: false },
+                { name: 'Humidifier', type: 'air', status: 'offline', state: false },
+                { name: 'Alarm Clock', type: 'clock', status: 'online', state: true }
+            ],
+            kitchen: [
+                { name: 'Under Cabinet Lights', type: 'light', status: 'online', state: false },
+                { name: 'Smart Fridge', type: 'appliance', status: 'online', state: true },
+                { name: 'Coffee Machine', type: 'appliance', status: 'online', state: false },
+                { name: 'Motion Sensor', type: 'sensor', status: 'online', state: true }
+            ],
+            garden: [
+                { name: 'Garden Lights', type: 'light', status: 'online', state: false },
+                { name: 'Irrigation System', type: 'water', status: 'online', state: false },
+                { name: 'Weather Station', type: 'sensor', status: 'online', state: true },
+                { name: 'Security Camera', type: 'security', status: 'online', state: true }
+            ]
+        };
+
+        let currentRoom = 'living';
+        let targetTemp = 21;
+        let isDragging = false;
+        let longPressTimer = null;
+
+        function updateClock() {
+            const now = new Date();
+            const clock = document.getElementById('clock');
+            const date = document.getElementById('date');
+            
+            clock.textContent = now.toLocaleTimeString('en-GB', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false
+            });
+            
+            date.textContent = now.toLocaleDateString('en-GB', { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric'
+            });
+        }
+        
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        function renderDevices(room) {
+            const deviceGrid = document.getElementById('deviceGrid');
+            const devices = roomDevices[room];
+            
+            deviceGrid.innerHTML = devices.map((device, index) => `
+                <div class="device-card" tabindex="0" data-device="${index}" role="button" aria-expanded="false">
+                    <div class="device-header">
+                        <div class="device-name">${device.name}</div>
+                        <div class="device-status ${device.status}"></div>
+                    </div>
+                    <label class="device-toggle">
+                        <input type="checkbox" class="toggle-input" ${device.state ? 'checked' : ''} 
+                               aria-label="Toggle ${device.name}">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <div class="device-controls">
+                        <div class="control-item">
+                            <span>Brightness</span>
+                            <input type="range" class="control-slider" min="0" max="100" value="75" aria-label="Brightness control">
+                        </div>
+                        <div class="control-item">
+                            <span>Schedule</span>
+                            <button style="background: #4A90E2; border: none; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Set</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Update device count
+            document.getElementById('deviceCount').textContent = `${devices.length} devices`;
+            
+            // Add event listeners
+            setupDeviceInteractions();
+        }
+
+        function setupDeviceInteractions() {
+            // Device card expansion
+            document.querySelectorAll('.device-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (e.target.closest('.device-toggle')) return;
+                    
+                    this.classList.toggle('expanded');
+                    const expanded = this.classList.contains('expanded');
+                    this.setAttribute('aria-expanded', expanded);
+                });
+            });
+
+            // Toggle switches
+            document.querySelectorAll('.toggle-input').forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    if (navigator.vibrate) {
+                        navigator.vibrate(50);
+                    }
+                });
+            });
+        }
+
+        // Room tabs
+        document.querySelectorAll('.room-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.room-tab').forEach(t => {
+                    t.classList.remove('active');
+                    t.setAttribute('aria-selected', 'false');
+                });
+                this.classList.add('active');
+                this.setAttribute('aria-selected', 'true');
+                
+                currentRoom = this.dataset.room;
+                renderDevices(currentRoom);
+            });
+        });
+
+        // Initialize with living room devices
+        renderDevices(currentRoom);
+
+        // Thermostat controls
+        const tempUpBtn = document.getElementById('tempUp');
+        const tempDownBtn = document.getElementById('tempDown');
+        const targetTempDisplay = document.getElementById('targetTemp');
+        const thermostatDial = document.getElementById('thermostat');
+
+        function updateTemperature(newTemp) {
+            targetTemp = Math.max(10, Math.min(30, newTemp));
+            targetTempDisplay.textContent = targetTemp + '°C';
+            thermostatDial.setAttribute('aria-valuenow', targetTemp);
+        }
+
+        tempUpBtn.addEventListener('click', () => updateTemperature(targetTemp + 0.5));
+        tempDownBtn.addEventListener('click', () => updateTemperature(targetTemp - 0.5));
+
+        // Thermostat drag functionality
+        thermostatDial.addEventListener('mousedown', startDrag);
+        thermostatDial.addEventListener('touchstart', startDrag);
+        
+        function startDrag(e) {
+            isDragging = true;
+            e.preventDefault();
+        }
+
+        document.addEventListener('mousemove', handleDrag);
+        document.addEventListener('touchmove', handleDrag);
+
+        function handleDrag(e) {
+            if (!isDragging) return;
+            
+            const rect = thermostatDial.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+            
+            const angle = Math.atan2(clientY - centerY, clientX - centerX);
+            const normalizedAngle = (angle + Math.PI * 2) % (Math.PI * 2);
+            const tempRange = 20; // 10-30°C
+            const newTemp = 10 + (normalizedAngle / (Math.PI * 2)) * tempRange;
+            
+            updateTemperature(Math.round(newTemp * 2) / 2); // Round to 0.5
+        }
+
+        document.addEventListener('mouseup', () => isDragging = false);
+        document.addEventListener('touchend', () => isDragging = false);
+
+        // Scene buttons
+        document.querySelectorAll('.scene-btn').forEach(btn => {
+            // Regular click
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.scene-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+
+            // Long press for customization
+            btn.addEventListener('mousedown', startLongPress);
+            btn.addEventListener('touchstart', startLongPress);
+            btn.addEventListener('mouseup', endLongPress);
+            btn.addEventListener('touchend', endLongPress);
+            btn.addEventListener('mouseleave', endLongPress);
+
+            function startLongPress(e) {
+                longPressTimer = setTimeout(() => {
+                    const modal = document.getElementById('sceneModal');
+                    const modalHeader = document.getElementById('modalHeader');
+                    modalHeader.textContent = `Customize ${btn.textContent.trim()} Scene`;
+                    modal.style.display = 'block';
+                    modal.setAttribute('aria-hidden', 'false');
+                }, 800);
+            }
+
+            function endLongPress() {
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+            }
+        });
+
+        // Modal functionality
+        const modal = document.getElementById('sceneModal');
+        const modalClose = document.getElementById('modalClose');
+
+        modalClose.addEventListener('click', () => {
+            modal.style.display = 'none';
+            modal.setAttribute('aria-hidden', 'true');
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                modal.setAttribute('aria-hidden', 'true');
+            }
+        });
+
+        // Notification dismiss
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('dismiss-btn')) {
+                e.target.parentElement.remove();
+            }
+        });
+
+        // Pull to refresh
+        let startY = 0;
+        let currentY = 0;
+        let isPulling = false;
+        
+        const container = document.getElementById('container');
+        const refreshIndicator = document.getElementById('refreshIndicator');
+
+        container.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+        });
+
+        container.addEventListener('touchmove', (e) => {
+            currentY = e.touches[0].clientY;
+            const deltaY = currentY - startY;
+            
+            if (deltaY > 0 && window.scrollY === 0) {
+                isPulling = true;
+                if (deltaY > 100) {
+                    refreshIndicator.textContent = 'Release to refresh';
+                } else {
+                    refreshIndicator.textContent = 'Pull to refresh';
+                }
+                refreshIndicator.style.opacity = Math.min(deltaY / 100, 1);
+            }
+        });
+
+        container.addEventListener('touchend', (e) => {
+            if (isPulling && currentY - startY > 100) {
+                refreshIndicator.textContent = 'Refreshing devices...';
+                refreshIndicator.classList.add('show');
+                
+                // Simulate refresh
+                setTimeout(() => {
+                    renderDevices(currentRoom);
+                    refreshIndicator.classList.remove('show');
+                    refreshIndicator.style.opacity = 0;
+                }, 2000);
+            } else {
+                refreshIndicator.style.opacity = 0;
+            }
+            isPulling = false;
+        });
+
+        // Energy efficiency tips
+        document.getElementById('efficiencyTips').addEventListener('click', () => {
+            alert('💡 Tip: Lower your thermostat by 1°C to save up to 10% on heating costs!');
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                const focused = document.activeElement;
+                if (focused.classList.contains('device-card')) {
+                    focused.click();
+                    e.preventDefault();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

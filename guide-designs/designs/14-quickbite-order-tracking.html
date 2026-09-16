@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuickBite Order Tracking</title>
+<style>
+  body {margin: 0; font-family: Arial, sans-serif; background-color: #F5F5F5; color: #333; line-height: 1.5; font-weight: 400; font-size: 16px;}
+  .container {max-width: 1200px; margin: 0 auto; padding: 16px;}
+  header, section {padding: 16px; background-color: #FFF; margin-bottom: 16px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
+  header {text-align: center; font-size: 36px; font-weight: 700; color: #FF6F61;}
+  section h2 {font-size: 24px; font-weight: 600; margin-bottom: 8px;}
+  .progress-tracker, .order-summary, .driver-info, .notification-banner {display: flex; flex-wrap: wrap; gap: 16px; align-items: center;}
+  .progress-tracker div, .order-summary div, .driver-info div {flex: 1; text-align: center;}
+  .progress-tracker div.active {color: #4CAF50;}
+  .notification-banner {background-color: #FF6F61; color: #FFF; padding: 8px; border-radius: 4px; animation: fadeIn 0.5s;}
+  .map-placeholder {height: 200px; background-color: #E0E0E0; border-radius: 8px;}
+  .map-placeholder:after {content: 'Map Placeholder'; display: block; text-align: center; line-height: 200px; color: #555;}
+  .button {background-color: #FF6F61; color: #FFF; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s; outline: none;}
+  .button:hover {background-color: #E05550;}
+  .button:focus {outline: 2px solid #4CAF50;}
+  .star-rating {display: flex; gap: 4px;}
+  .star-rating span {font-size: 24px; cursor: pointer; transition: color 0.2s;}
+  .star-rating span:hover, .star-rating span:hover ~ span {color: #FFC107;}
+  @keyframes fadeIn {from {opacity: 0;} to {opacity: 1;}}
+  @media (max-width: 600px) {
+    header, section {padding: 8px;}
+    .progress-tracker, .order-summary, .driver-info {flex-direction: column; align-items: flex-start;}
+  }
+</style>
+</head>
+<body>
+<main class="container">
+  <header id="header">
+    Estimated Delivery: 30 mins
+  </header>
+
+  <section id="progressTracker">
+    <h2>Order Progress</h2>
+    <div class="progress-tracker">
+      <div class="active">Order Confirmed</div>
+      <div>Being Prepared</div>
+      <div>Out for Delivery</div>
+      <div>Delivered</div>
+    </div>
+  </section>
+
+  <section id="mapArea">
+    <h2>Live Map</h2>
+    <div class="map-placeholder"></div>
+  </section>
+
+  <section id="driverInfo">
+    <h2>Driver Information</h2>
+    <div class="driver-info">
+      <div>Driver: John Doe</div>
+      <button class="button" onclick="callDriver()">Contact Driver</button>
+    </div>
+  </section>
+
+  <section id="orderSummary">
+    <h2>Order Summary</h2>
+    <div class="order-summary">
+      <div>Pizza</div>
+      <div>Burger</div>
+      <div>Total: $25.00</div>
+    </div>
+  </section>
+
+  <div id="notificationBanner" class="notification-banner" style="display:none;">
+    Status Update: Your order is out for delivery!
+  </div>
+
+  <section id="helpButton">
+    <button class="button" onclick="openHelpModal()">Need Help?</button>
+  </section>
+
+  <section id="rateExperience" style="display:none;">
+    <h2>Rate Your Experience</h2>
+    <div class="star-rating">
+      <span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span>
+    </div>
+  </section>
+</main>
+
+<script>
+  function callDriver() {
+    window.location.href = 'tel:+1234567890';
+  }
+
+  function openHelpModal() {
+    const modal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.top = '50%';
+    modal.style.left = '50%';
+    modal.style.transform = 'translate(-50%, -50%)';
+    modal.style.backgroundColor = '#FFF';
+    modal.style.padding = '16px';
+    modal.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+    modal.style.zIndex = '1000';
+    modal.textContent = 'Help modal content goes here.';
+    document.body.appendChild(modal);
+    setTimeout(() => {
+      document.body.removeChild(modal);
+    }, 3000);
+  }
+
+  function updateStatus() {
+    const banner = document.getElementById('notificationBanner');
+    banner.style.display = 'block';
+  }
+
+  function showRateExperience() {
+    const rateSection = document.getElementById('rateExperience');
+    rateSection.style.display = 'block';
+  }
+
+  // Simulate status update and delivery completion
+  setTimeout(updateStatus, 3000); // Show notification after 3 seconds
+  setTimeout(showRateExperience, 6000); // Show rate section after 6 seconds
+</script>
+</body>
+</html>

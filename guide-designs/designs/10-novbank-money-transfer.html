@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovBank Money Transfer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            background: #FFFFFF;
+            color: #1A1D29;
+            line-height: 1.5;
+            max-width: 375px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        .screen {
+            display: none;
+            padding: 16px;
+            min-height: 100vh;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0 24px;
+            position: sticky;
+            top: 0;
+            background: #FFFFFF;
+            z-index: 10;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1A1D29;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .icon-btn:hover, .icon-btn:focus {
+            background: #F8F9FA;
+        }
+
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section-label {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1A1D29;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #F8F9FA;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 400;
+            background: #FFFFFF;
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #0066CC;
+        }
+
+        .input-field.error {
+            border-color: #FF4757;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 18px;
+            pointer-events: none;
+        }
+
+        .amount-container {
+            position: relative;
+        }
+
+        .amount-input {
+            font-size: 32px;
+            font-weight: 600;
+            text-align: center;
+            padding: 24px 16px 24px 60px;
+        }
+
+        .currency-symbol {
+            position: absolute;
+            left: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 32px;
+            font-weight: 600;
+            color: #1A1D29;
+            pointer-events: none;
+        }
+
+        .balance-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .error-text {
+            font-size: 12px;
+            font-weight: 400;
+            color: #FF4757;
+            margin-top: 8px;
+        }
+
+        .autocomplete {
+            position: relative;
+        }
+
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #FFFFFF;
+            border: 2px solid #F8F9FA;
+            border-radius: 12px;
+            margin-top: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 5;
+            display: none;
+        }
+
+        .autocomplete-dropdown.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #F8F9FA;
+            transition: background 0.2s;
+        }
+
+        .autocomplete-item:hover {
+            background: #F8F9FA;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .payee-avatars {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .payee-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 28px;
+            background: #0066CC;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .payee-avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border: 2px solid #F8F9FA;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .radio-option:hover {
+            border-color: #0066CC;
+        }
+
+        .radio-option.selected {
+            border-color: #0066CC;
+            background: rgba(0, 102, 204, 0.05);
+        }
+
+        .radio-input {
+            width: 20px;
+            height: 20px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+        }
+
+        .btn:focus {
+            outline: 2px solid #0066CC;
+            outline-offset: 2px;
+        }
+
+        .btn-primary {
+            background: #0066CC;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0052A3;
+        }
+
+        .btn-primary:disabled {
+            background: #CCC;
+            cursor: not-allowed;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #0066CC;
+            border: 2px solid #0066CC;
+        }
+
+        .btn-outline:hover {
+            background: #0066CC;
+            color: white;
+        }
+
+        .confirmation-card {
+            background: #F8F9FA;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .confirmation-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .confirmation-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .confirmation-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .confirmation-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .confirmation-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1A1D29;
+        }
+
+        .amount-large {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1A1D29;
+        }
+
+        .edit-link {
+            font-size: 14px;
+            color: #0066CC;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .edit-link:hover {
+            color: #0052A3;
+            text-decoration: underline;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 40px;
+            background: #00C896;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            color: white;
+            font-size: 40px;
+        }
+
+        .success-title {
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .reference-number {
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 320px;
+            width: 90%;
+        }
+
+        .character-counter {
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin: 16px 0;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .calendar-day:hover {
+            background: #F8F9FA;
+        }
+
+        .calendar-day.selected {
+            background: #0066CC;
+            color: white;
+        }
+
+        .calendar-day.disabled {
+            color: #CCC;
+            cursor: not-allowed;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .calendar-month {
+            font-weight: 600;
+            text-align: center;
+            flex: 1;
+        }
+
+        .validation-message {
+            font-size: 12px;
+            color: #FF4757;
+            margin-top: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Transfer Screen -->
+    <div id="transfer-screen" class="screen active">
+        <div class="header">
+            <button class="icon-btn" onclick="goBack()">←</button>
+            <h1>Transfer</h1>
+            <button class="icon-btn" onclick="closeApp()">✕</button>
+        </div>
+
+        <div class="section">
+            <div class="section-label">To</div>
+            <div class="autocomplete">
+                <div class="input-with-icon">
+                    <input type="text" class="input-field" id="recipient-input" placeholder="Search contacts or enter details" oninput="handleRecipientSearch()" onfocus="showRecipients()">
+                    <div class="input-icon">👤</div>
+                </div>
+                <div class="validation-message" id="recipient-validation">Please select a recipient</div>
+                <div class="autocomplete-dropdown" id="recipient-dropdown">
+                    <div class="autocomplete-item" onclick="selectRecipient('John Smith')">John Smith</div>
+                    <div class="autocomplete-item" onclick="selectRecipient('Sarah Wilson')">Sarah Wilson</div>
+                    <div class="autocomplete-item" onclick="selectRecipient('Mike Johnson')">Mike Johnson</div>
+                </div>
+            </div>
+            <div class="payee-avatars">
+                <div class="payee-avatar" onclick="selectRecipient('John Smith')">JS</div>
+                <div class="payee-avatar" onclick="selectRecipient('Sarah Wilson')">SW</div>
+                <div class="payee-avatar" onclick="selectRecipient('Mike Johnson')">MJ</div>
+                <div class="payee-avatar" onclick="addNewRecipient()">+</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-label">Amount</div>
+            <div class="amount-container">
+                <div class="currency-symbol">£</div>
+                <input type="number" class="input-field amount-input" id="amount-input" placeholder="0" oninput="validateAmount()" step="0.01">
+            </div>
+            <div class="validation-message" id="amount-validation">Please enter an amount</div>
+            <div class="balance-text">Available balance: £<span id="available-balance">2,450.00</span></div>
+            <div class="error-text" id="amount-error" style="display: none;">Insufficient funds</div>
+        </div>
+
+        <div class="section">
+            <div class="section-label">Reference</div>
+            <input type="text" class="input-field" id="reference-input" placeholder="For..." maxlength="140" oninput="updateCharacterCount()">
+            <div class="character-counter"><span id="char-count">0</span>/140</div>
+        </div>
+
+        <div class="section">
+            <div class="section-label">When</div>
+            <div class="radio-group">
+                <div class="radio-option selected" onclick="selectSchedule('now')">
+                    <input type="radio" name="schedule" value="now" class="radio-input" checked>
+                    <span>Send now</span>
+                </div>
+                <div class="radio-option" onclick="selectSchedule('tomorrow')">
+                    <input type="radio" name="schedule" value="tomorrow" class="radio-input">
+                    <span>Send tomorrow</span>
+                </div>
+                <div class="radio-option" onclick="selectSchedule('schedule')">
+                    <input type="radio" name="schedule" value="schedule" class="radio-input">
+                    <span>Schedule for later</span>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" id="review-btn" onclick="showConfirmation()">Review Transfer</button>
+    </div>
+
+    <!-- Confirmation Screen -->
+    <div id="confirmation-screen" class="screen">
+        <div class="header">
+            <button class="icon-btn" onclick="showTransferScreen()">←</button>
+            <h1>Confirm Transfer</h1>
+            <button class="icon-btn" onclick="closeApp()">✕</button>
+        </div>
+
+        <div class="confirmation-card">
+            <div class="confirmation-row">
+                <div class="confirmation-left">
+                    <span class="confirmation-label">To</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="confirmation-value" id="confirm-recipient">John Smith</span>
+                    <a class="edit-link" onclick="editRecipient()">Edit</a>
+                </div>
+            </div>
+            <div class="confirmation-row">
+                <div class="confirmation-left">
+                    <span class="confirmation-label">Amount</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="amount-large" id="confirm-amount">£0.00</span>
+                    <a class="edit-link" onclick="editAmount()">Edit</a>
+                </div>
+            </div>
+            <div class="confirmation-row">
+                <div class="confirmation-left">
+                    <span class="confirmation-label">Reference</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="confirmation-value" id="confirm-reference">-</span>
+                    <a class="edit-link" onclick="editReference()">Edit</a>
+                </div>
+            </div>
+            <div class="confirmation-row">
+                <div class="confirmation-left">
+                    <span class="confirmation-label">When</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="confirmation-value" id="confirm-schedule">Now</span>
+                    <a class="edit-link" onclick="editSchedule()">Edit</a>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="processTransfer()">Confirm and Send</button>
+        <button class="btn btn-outline" onclick="showTransferScreen()">Cancel</button>
+    </div>
+
+    <!-- Success Screen -->
+    <div id="success-screen" class="screen">
+        <div class="header">
+            <div></div>
+            <h1>Transfer Complete</h1>
+            <button class="icon-btn" onclick="closeApp()">✕</button>
+        </div>
+
+        <div class="success-icon">✓</div>
+        <div class="success-title">Transfer sent</div>
+        <div class="reference-number">Reference: TR<span id="transaction-ref">240101-001</span></div>
+
+        <div class="confirmation-card">
+            <div class="confirmation-row">
+                <span class="confirmation-label">To</span>
+                <span class="confirmation-value" id="success-recipient">John Smith</span>
+            </div>
+            <div class="confirmation-row">
+                <span class="confirmation-label">Amount</span>
+                <span class="amount-large" id="success-amount">£0.00</span>
+            </div>
+            <div class="confirmation-row">
+                <span class="confirmation-label">Reference</span>
+                <span class="confirmation-value" id="success-reference">-</span>
+            </div>
+        </div>
+
+        <button class="btn btn-outline" onclick="shareReceipt()">Share Receipt</button>
+        <button class="btn btn-primary" onclick="resetApp()">Done</button>
+    </div>
+
+    <!-- Date Picker Modal -->
+    <div id="date-modal" class="modal">
+        <div class="modal-content">
+            <div class="calendar-header">
+                <button class="icon-btn" onclick="previousMonth()">‹</button>
+                <div class="calendar-month" id="calendar-month">January 2024</div>
+                <button class="icon-btn" onclick="nextMonth()">›</button>
+            </div>
+            <div class="calendar-grid" id="calendar-grid">
+                <!-- Calendar days will be populated by JavaScript -->
+            </div>
+            <button class="btn btn-primary" onclick="confirmDate()" id="confirm-date-btn" disabled>Confirm</button>
+            <button class="btn btn-outline" onclick="closeDateModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        let transferData = {
+            recipient: '',
+            amount: '',
+            reference: '',
+            schedule: 'now',
+            scheduledDate: ''
+        };
+
+        let availableBalance = 2450.00;
+        let currentCalendarDate = new Date();
+        let selectedCalendarDate = null;
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function handleRecipientSearch() {
+            const input = document.getElementById('recipient-input');
+            const dropdown = document.getElementById('recipient-dropdown');
+            
+            if (input.value.length > 0) {
+                dropdown.classList.add('show');
+            } else {
+                dropdown.classList.remove('show');
+            }
+            
+            transferData.recipient = input.value;
+            validateForm();
+        }
+
+        function showRecipients() {
+            document.getElementById('recipient-dropdown').classList.add('show');
+        }
+
+        function selectRecipient(name) {
+            document.getElementById('recipient-input').value = name;
+            document.getElementById('recipient-dropdown').classList.remove('show');
+            transferData.recipient = name;
+            clearValidation('recipient');
+            validateForm();
+        }
+
+        function addNewRecipient() {
+            alert('Add new recipient functionality would open here');
+        }
+
+        function validateAmount() {
+            const amount = parseFloat(document.getElementById('amount-input').value) || 0;
+            const errorEl = document.getElementById('amount-error');
+
+            if (amount > availableBalance) {
+                errorEl.style.display = 'block';
+            } else {
+                errorEl.style.display = 'none';
+            }
+
+            transferData.amount = amount;
+            clearValidation('amount');
+            validateForm();
+        }
+
+        function validateForm() {
+            const reviewBtn = document.getElementById('review-btn');
+            let isValid = true;
+
+            // Validate recipient
+            if (!transferData.recipient) {
+                isValid = false;
+            }
+
+            // Validate amount
+            if (!transferData.amount || transferData.amount <= 0) {
+                isValid = false;
+            }
+
+            // Check if amount exceeds balance
+            if (transferData.amount > availableBalance) {
+                isValid = false;
+            }
+
+            reviewBtn.disabled = !isValid;
+        }
+
+        function showValidation(field) {
+            document.getElementById(`${field}-validation`).style.display = 'block';
+            document.getElementById(`${field}-input`).classList.add('error');
+        }
+
+        function clearValidation(field) {
+            document.getElementById(`${field}-validation`).style.display = 'none';
+            document.getElementById(`${field}-input`).classList.remove('error');
+        }
+
+        function updateCharacterCount() {
+            const input = document.getElementById('reference-input');
+            const counter = document.getElementById('char-count');
+            counter.textContent = input.value.length;
+            transferData.reference = input.value;
+        }
+
+        function selectSchedule(type) {
+            document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            transferData.schedule = type;
+
+            if (type === 'schedule') {
+                generateCalendar();
+                document.getElementById('date-modal').classList.add('show');
+            }
+        }
+
+        function generateCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            const monthEl = document.getElementById('calendar-month');
+            
+            const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                           'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            monthEl.textContent = `${months[currentCalendarDate.getMonth()]} ${currentCalendarDate.getFullYear()}`;
+            
+            grid.innerHTML = '';
+            
+            // Add day headers
+            ['S', 'M', 'T', 'W', 'T', 'F', 'S'].forEach(day => {
+                const dayEl = document.createElement('div');
+                dayEl.textContent = day;
+                dayEl.style.fontWeight = '600';
+                dayEl.style.color = '#666';
+                grid.appendChild(dayEl);
+            });
+            
+            const firstDay = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth(), 1);
+            const lastDay = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() + 1, 0);
+            const today = new Date();
+            
+            // Add empty cells for days before month starts
+            for (let i = 0; i < firstDay.getDay(); i++) {
+                const dayEl = document.createElement('div');
+                grid.appendChild(dayEl);
+            }
+            
+            // Add days of the month
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-day';
+                dayEl.textContent = day;
+                
+                const dayDate = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth(), day);
+                
+                if (dayDate < today) {
+                    dayEl.classList.add('disabled');
+                } else {
+                    dayEl.onclick = () => selectDate(dayDate);
+                }
+                
+                grid.appendChild(dayEl);
+            }
+        }
+
+        function selectDate(date) {
+            document.querySelectorAll('.calendar-day.selected').forEach(el => el.classList.remove('selected'));
+            event.target.classList.add('selected');
+            selectedCalendarDate = date;
+            document.getElementById('confirm-date-btn').disabled = false;
+        }
+
+        function previousMonth() {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+            generateCalendar();
+        }
+
+        function nextMonth() {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+            generateCalendar();
+        }
+
+        function confirmDate() {
+            if (selectedCalendarDate) {
+                transferData.scheduledDate = selectedCalendarDate.toLocaleDateString();
+                closeDateModal();
+            }
+        }
+
+        function closeDateModal() {
+            document.getElementById('date-modal').classList.remove('show');
+            selectedCalendarDate = null;
+            document.getElementById('confirm-date-btn').disabled = true;
+        }
+
+        function showConfirmation() {
+            let hasErrors = false;
+
+            if (!transferData.recipient) {
+                showValidation('recipient');
+                hasErrors = true;
+            }
+
+            if (!transferData.amount || transferData.amount <= 0) {
+                showValidation('amount');
+                hasErrors = true;
+            }
+
+            if (hasErrors) {
+                return;
+            }
+
+            document.getElementById('confirm-recipient').textContent = transferData.recipient;
+            document.getElementById('confirm-amount').textContent = `£${transferData.amount.toFixed(2)}`;
+            document.getElementById('confirm-reference').textContent = transferData.reference || '-';
+            
+            let scheduleText = 'Now';
+            if (transferData.schedule === 'tomorrow') scheduleText = 'Tomorrow';
+            if (transferData.schedule === 'schedule') scheduleText = transferData.scheduledDate;
+            document.getElementById('confirm-schedule').textContent = scheduleText;
+
+            showScreen('confirmation-screen');
+        }
+
+        function editRecipient() {
+            showTransferScreen();
+            document.getElementById('recipient-input').focus();
+        }
+
+        function editAmount() {
+            showTransferScreen();
+            document.getElementById('amount-input').focus();
+        }
+
+        function editReference() {
+            showTransferScreen();
+            document.getElementById('reference-input').focus();
+        }
+
+        function editSchedule() {
+            showTransferScreen();
+            document.querySelector('.radio-option').focus();
+        }
+
+        function showTransferScreen() {
+            showScreen('transfer-screen');
+        }
+
+        function processTransfer() {
+            // Update success screen
+            document.getElementById('success-recipient').textContent = transferData.recipient;
+            document.getElementById('success-amount').textContent = `£${transferData.amount.toFixed(2)}`;
+            document.getElementById('success-reference').textContent = transferData.reference || '-';
+            
+            // Generate random transaction reference
+            const ref = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            document.getElementById('transaction-ref').textContent = `240101-${ref}`;
+
+            showScreen('success-screen');
+        }
+
+        function shareReceipt() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Transfer Receipt',
+                    text: `Transfer of £${transferData.amount.toFixed(2)} to ${transferData.recipient}`
+                });
+            } else {
+                alert('Receipt sharing would open native share sheet');
+            }
+        }
+
+        function resetApp() {
+            transferData = {
+                recipient: '',
+                amount: '',
+                reference: '',
+                schedule: 'now',
+                scheduledDate: ''
+            };
+            
+            document.getElementById('recipient-input').value = '';
+            document.getElementById('amount-input').value = '';
+            document.getElementById('reference-input').value = '';
+            document.getElementById('char-count').textContent = '0';
+            document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelector('.radio-option').classList.add('selected');
+            
+            // Clear all validation messages
+            document.querySelectorAll('.validation-message').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.input-field').forEach(el => el.classList.remove('error'));
+            
+            showScreen('transfer-screen');
+        }
+
+        function goBack() {
+            resetApp();
+        }
+
+        function closeApp() {
+            if (confirm('Are you sure you want to close?')) {
+                window.close();
+            }
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.autocomplete')) {
+                document.getElementById('recipient-dropdown').classList.remove('show');
+            }
+        });
+
+        // Initialize form validation
+        validateForm();
+    </script>
+</body>
+</html>

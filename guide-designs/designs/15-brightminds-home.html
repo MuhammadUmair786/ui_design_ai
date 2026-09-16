@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrightMinds Home Screen</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #FFFFFF;
+    color: #333333;
+    margin: 0;
+    padding: 0;
+  }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 768px) {
+    .container {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  p {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  .welcome-message {
+    background-color: #FFCC00;
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+  }
+  .subject-card {
+    background-color: #FF6F61;
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+    outline: none;
+    margin-bottom: 8px;
+  }
+  .subject-card:hover, .subject-card:focus {
+    transform: scale(1.05);
+  }
+  .progress-bar {
+    background-color: #EEEEEE;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress {
+    background-color: #00C853;
+    height: 20px;
+    width: 50%;
+  }
+  .badge {
+    display: inline-block;
+    margin: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    outline: none;
+  }
+  .badge:hover, .badge:focus {
+    transform: scale(1.1);
+  }
+  .settings-button {
+    background-color: #FF6F61;
+    color: #FFFFFF;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    outline: none;
+  }
+  .settings-button:hover, .settings-button:focus {
+    background-color: #FF8A80;
+  }
+  .icon {
+    font-size: 48px;
+  }
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  .modal-content {
+    background-color: #FFFFFF;
+    padding: 32px;
+    border-radius: 12px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header id="welcome" class="welcome-message">
+    <h1>Welcome, <strong>Jamie!</strong></h1>
+    <p>We're excited to have you back!</p>
+  </header>
+
+  <section id="subjects" aria-labelledby="subjects-heading">
+    <h2 id="subjects-heading">Explore Subjects</h2>
+    <div class="subject-card" tabindex="0" role="button" aria-label="Math" onclick="navigateTo('math')" onkeypress="if(event.key==='Enter'){navigateTo('math');}">
+      <div class="icon">🔢</div>
+      <p>Math</p>
+    </div>
+    <div class="subject-card" tabindex="0" role="button" aria-label="Reading" onclick="navigateTo('reading')" onkeypress="if(event.key==='Enter'){navigateTo('reading');}">
+      <div class="icon">📚</div>
+      <p>Reading</p>
+    </div>
+    <div class="subject-card" tabindex="0" role="button" aria-label="Science" onclick="navigateTo('science')" onkeypress="if(event.key==='Enter'){navigateTo('science');}">
+      <div class="icon">🔬</div>
+      <p>Science</p>
+    </div>
+    <div class="subject-card" tabindex="0" role="button" aria-label="Art" onclick="navigateTo('art')" onkeypress="if(event.key==='Enter'){navigateTo('art');}">
+      <div class="icon">🎨</div>
+      <p>Art</p>
+    </div>
+  </section>
+
+  <section id="progress" aria-labelledby="progress-heading">
+    <h2 id="progress-heading">Daily Progress</h2>
+    <div class="progress-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress"></div>
+    </div>
+    <p>Activities completed: 5/10</p>
+  </section>
+
+  <section id="achievements" aria-labelledby="achievements-heading">
+    <h2 id="achievements-heading">Reward Badges</h2>
+    <div class="badge" tabindex="0" role="button" aria-label="Star Student badge" onclick="showBadgeInfo('Star Student')" onkeypress="if(event.key==='Enter'){showBadgeInfo('Star Student');}">⭐</div>
+    <div class="badge" tabindex="0" role="button" aria-label="Math Whiz badge" onclick="showBadgeInfo('Math Whiz')" onkeypress="if(event.key==='Enter'){showBadgeInfo('Math Whiz');}">🔢</div>
+    <div class="badge" tabindex="0" role="button" aria-label="Book Lover badge" onclick="showBadgeInfo('Book Lover')" onkeypress="if(event.key==='Enter'){showBadgeInfo('Book Lover');}">📚</div>
+  </section>
+
+  <nav id="parentSettings" aria-label="Parent settings">
+    <button class="settings-button" onclick="toggleModal()" onkeypress="if(event.key==='Enter'){toggleModal();}">Settings ⚙️</button>
+  </nav>
+</div>
+
+<div class="modal" id="settingsModal" role="dialog" aria-labelledby="modal-heading" aria-hidden="true">
+  <div class="modal-content">
+    <h2 id="modal-heading">Parent Settings</h2>
+    <p>Configure your app settings here.</p>
+    <button class="settings-button" onclick="toggleModal()">Close</button>
+  </div>
+</div>
+
+<script>
+  function navigateTo(subject) {
+    alert('Navigating to ' + subject);
+  }
+
+  function showBadgeInfo(badge) {
+    alert('Info about ' + badge);
+  }
+
+  function toggleModal() {
+    const modal = document.getElementById('settingsModal');
+    const isOpen = modal.style.display === 'flex';
+    modal.style.display = isOpen ? 'none' : 'flex';
+    modal.setAttribute('aria-hidden', isOpen.toString());
+    if (!isOpen) {
+      modal.querySelector('.settings-button').focus();
+    }
+  }
+</script>
+</body>
+</html>

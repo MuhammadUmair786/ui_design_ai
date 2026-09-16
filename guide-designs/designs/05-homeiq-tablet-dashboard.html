@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HomeIQ Tablet Control Dashboard</title>
+<style>
+:root {
+  --primary: #0F172A;
+  --secondary: #E2E8F0;
+  --accent: #2563EB;
+  --bg: #F8FAFC;
+  --text: #1E293B;
+  --font: 'Inter', -apple-system, system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); padding: 32px; }
+.container { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }
+
+/* Header */
+header { display: flex; justify-content: space-between; align-items: center; }
+.time-group h1 { font-size: 40px; font-weight: 700; color: var(--primary); line-height: 1; }
+.time-group p { font-size: 16px; color: #64748B; margin-top: 4px; }
+.status-badge { background: #E2E8F0; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; color: #475569; }
+.bell { position: relative; cursor: pointer; font-size: 20px; }
+.bell::after { content: '2'; position: absolute; top: -4px; right: -4px; background: var(--accent); color: white; font-size: 10px; width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+
+/* Nav */
+.room-nav { display: flex; gap: 12px; border-bottom: 1px solid var(--secondary); padding-bottom: 16px; }
+.tab { padding: 8px 24px; border-radius: 24px; border: 1px solid transparent; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; color: #64748B; }
+.tab.active { background: var(--primary); color: white; }
+
+/* Grid */
+.main-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.card { background: white; padding: 24px; border: 1px solid #E2E8F0; border-radius: 16px; display: flex; flex-direction: column; gap: 16px; }
+.card-header { display: flex; justify-content: space-between; align-items: center; }
+.card-title { font-size: 13px; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* Toggles */
+.toggle-wrapper { display: flex; align-items: center; gap: 12px; }
+.toggle { width: 44px; height: 24px; background: var(--secondary); border-radius: 12px; position: relative; cursor: pointer; transition: 0.3s; }
+.toggle::after { content: ''; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.toggle.on { background: var(--accent); }
+.toggle.on::after { left: 22px; }
+.toggle-text { font-size: 13px; font-weight: 600; }
+
+/* Thermostat */
+.thermo-display { font-size: 40px; font-weight: 700; }
+.btn-group { display: flex; gap: 8px; }
+.ctrl-btn { flex: 1; padding: 12px; border: 1px solid var(--secondary); border-radius: 8px; font-weight: 700; cursor: pointer; background: #F8FAFC; }
+
+/* Scenes */
+.scenes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.scene-btn { height: 100px; font-weight: 600; border: 1px solid var(--secondary); border-radius: 16px; background: white; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+.scene-btn:hover { border-color: var(--accent); }
+.pulse { animation: pulse 0.5s ease-in-out; border-color: var(--accent); }
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(0.95); opacity: 0.7; } 100% { transform: scale(1); } }
+
+@media (max-width: 768px) { .main-grid, .scenes { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="time-group">
+      <h1>09:41 AM</h1>
+      <p>Tuesday, Oct 24</p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 24px;">
+      <span class="status-badge">3 devices active</span>
+      <div class="bell">🔔</div>
+    </div>
+  </header>
+
+  <nav class="room-nav">
+    <button class="tab active">Living Room</button>
+    <button class="tab">Bedroom</button>
+    <button class="tab">Kitchen</button>
+    <button class="tab">Garden</button>
+  </nav>
+
+  <main class="main-grid">
+    <div class="card">
+      <div class="card-title">Ceiling Lights</div>
+      <div class="toggle-wrapper" onclick="toggleSwitch(this)">
+        <div class="toggle"></div>
+        <span class="toggle-text">OFF</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Thermostat</div>
+      <div class="thermo-display" id="temp">22°C</div>
+      <div class="btn-group">
+        <button class="ctrl-btn" onclick="updateTemp(-1)">-</button>
+        <button class="ctrl-btn" onclick="updateTemp(1)">+</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Energy Usage</div>
+      <div style="font-size: 24px; font-weight: 700;">1.2 kWh</div>
+      <div style="font-size: 13px; color: #64748B;">£0.34 total cost</div>
+    </div>
+  </main>
+
+  <section class="scenes">
+    <button class="scene-btn" onclick="trigger(this)">Morning</button>
+    <button class="scene-btn" onclick="trigger(this)">Away</button>
+    <button class="scene-btn" onclick="trigger(this)">Evening</button>
+    <button class="scene-btn" onclick="trigger(this)">Sleep</button>
+  </section>
+</div>
+
+<script>
+function updateTemp(val) {
+  const el = document.getElementById('temp');
+  let current = parseInt(el.innerText);
+  el.innerText = (current + val) + '°C';
+}
+function trigger(el) {
+  el.classList.add('pulse');
+  setTimeout(() => el.classList.remove('pulse'), 500);
+}
+function toggleSwitch(parent) {
+  const toggle = parent.querySelector('.toggle');
+  const text = parent.querySelector('.toggle-text');
+  toggle.classList.toggle('on');
+  text.innerText = toggle.classList.contains('on') ? 'ON' : 'OFF';
+}
+</script>
+</body>
+</html>

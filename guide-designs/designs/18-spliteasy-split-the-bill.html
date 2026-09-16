@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SplitEasy - Split the Bill Screen</title>
+<style>
+  body {font-family: Arial, sans-serif; background-color: #F5F5F5; color: #212121; margin: 0; padding: 16px; box-sizing: border-box;}
+  .container {max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px;}
+  h2 {font-size: 32px; font-weight: 500; margin: 16px 0;}
+  h3 {font-size: 24px; font-weight: 500; margin: 16px 0;}
+  label {font-size: 14px; font-weight: 400; display: block; margin-bottom: 8px;}
+  input[type="number"], input[type="text"] {width: 100%; padding: 8px; font-size: 18px; margin-bottom: 16px; border: 1px solid #ccc; border-radius: 4px;}
+  button {padding: 10px 16px; font-size: 18px; font-weight: 400; border: none; border-radius: 4px; cursor: pointer; transition: background-color 200ms, outline 200ms;}
+  button:focus {outline: 2px solid #FF4081;}
+  .primary-button {background-color: #0041C2; color: #FFF;}
+  .primary-button:hover, .primary-button:focus {background-color: #0031A2;}
+  .accent-button {background-color: #FF4081; color: #FFF;}
+  .accent-button:hover, .accent-button:focus {background-color: #E03071;}
+  .card {background-color: #FFF; padding: 16px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
+  .person-list li {display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;}
+  .paid-badge {background-color: #0084FF; color: #FFF; padding: 2px 8px; border-radius: 12px; font-size: 14px;}
+  .tip-buttons button {margin-right: 8px;}
+  @media (max-width: 768px) {
+    .container {grid-template-columns: 1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="card" style="grid-column: span 12;" id="total-bill">
+    <h2>Total Bill</h2>
+    <label for="bill-amount">Enter Total Bill Amount</label>
+    <input type="number" id="bill-amount" placeholder="$0.00" aria-label="Total Bill Amount" aria-required="true" min="0" step="0.01">
+  </div>
+  
+  <div class="card" style="grid-column: span 12;" id="add-people">
+    <h2>Add People</h2>
+    <label for="person-name">Person's Name</label>
+    <input type="text" id="person-name" placeholder="Enter name" aria-label="Person's Name" aria-required="true">
+    <button class="primary-button" type="button" id="add-person">Add Person</button>
+    <ul class="person-list" id="people-list"></ul>
+  </div>
+  
+  <div class="card" style="grid-column: span 12;" id="calculated-shares">
+    <h2>Calculated Shares</h2>
+    <ul class="person-list" id="shares-list"></ul>
+  </div>
+  
+  <div class="card" style="grid-column: span 12;" id="tip-selector">
+    <h2>Select Tip Percentage</h2>
+    <div class="tip-buttons">
+      <button class="primary-button" type="button" data-tip="10">10%</button>
+      <button class="primary-button" type="button" data-tip="15">15%</button>
+      <button class="primary-button" type="button" data-tip="20">20%</button>
+    </div>
+  </div>
+  
+  <div class="card" style="grid-column: span 12;" id="summary">
+    <h2>Summary</h2>
+    <p>Total Collected: $<span id="total-collected">0.00</span></p>
+    <p>Remaining: $<span id="remaining-amount">0.00</span></p>
+  </div>
+  
+  <div class="card" style="grid-column: span 12;" id="share-bill">
+    <button class="accent-button" type="button" id="share-bill-button">Share Bill</button>
+  </div>
+</div>
+
+<script>
+  const billAmountInput = document.getElementById('bill-amount');
+  const personNameInput = document.getElementById('person-name');
+  const addPersonButton = document.getElementById('add-person');
+  const peopleList = document.getElementById('people-list');
+  const sharesList = document.getElementById('shares-list');
+  const tipButtons = document.querySelectorAll('.tip-buttons button');
+  const totalCollected = document.getElementById('total-collected');
+  const remainingAmount = document.getElementById('remaining-amount');
+  const shareBillButton = document.getElementById('share-bill-button');
+  
+  let people = [];
+  let totalBill = 0;
+  let tipPercentage = 0;
+  
+  addPersonButton.addEventListener('click', () => {
+    const name = personNameInput.value.trim();
+    if (name) {
+      people.push({name, paid: false});
+      updatePeopleList();
+      personNameInput.value = '';
+    }
+  });
+
+  billAmountInput.addEventListener('input', () => {
+    totalBill = parseFloat(billAmountInput.value) || 0;
+    updateShares();
+  });
+
+  tipButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      tipPercentage = parseInt(button.dataset.tip);
+      updateShares();
+    });
+  });
+
+  sharesList.addEventListener('click', (event) => {
+    if (event.target.tagName === 'BUTTON') {
+      const index = event.target.dataset.index;
+      people[index].paid = !people[index].paid;
+      updatePeopleList();
+    }
+  });
+
+  shareBillButton.addEventListener('click', () => {
+    if (navigator.share) {
+      navigator.share({
+        title: 'Bill Details',
+        text: `Total Bill: $${totalBill.toFixed(2)}, Tip: ${tipPercentage}%`,
+      });
+    }
+  });
+
+  function updatePeopleList() {
+    peopleList.innerHTML = '';
+    sharesList.innerHTML = '';
+    people.forEach((person, index) => {
+      const li = document.createElement('li');
+      li.textContent = person.name;
+      if (person.paid) {
+        const badge = document.createElement('span');
+        badge.className = 'paid-badge';
+        badge.textContent = 'Paid';
+        li.appendChild(badge);
+      }
+      peopleList.appendChild(li);
+      const shareLi = document.createElement('li');
+      shareLi.innerHTML = `${person.name} owes $${calculateShare(totalBill, tipPercentage, people.length).toFixed(2)} <button class="accent-button" data-index="${index}" type="button">${person.paid ? 'Undo' : 'Settle Up'}</button>`;
+      sharesList.appendChild(shareLi);
+    });
+    updateSummary();
+  }
+
+  function updateShares() {
+    updatePeopleList();
+  }
+
+  function updateSummary() {
+    const share = calculateShare(totalBill, tipPercentage, people.length);
+    const total = share * people.length;
+    totalCollected.textContent = total.toFixed(2);
+    remainingAmount.textContent = (totalBill + totalBill * tipPercentage / 100 - total).toFixed(2);
+  }
+
+  function calculateShare(total, tip, count) {
+    if (count === 0) return 0;
+    return (total + (total * tip / 100)) / count;
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HomeIQ Dashboard</title>
+<style>
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #F5F5F7; color: #333; }
+  .container { max-width: 1280px; margin: 0 auto; padding: 16px; }
+  header, section { margin-bottom: 32px; }
+  header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #A8A8A8; padding-bottom: 16px; }
+  h1 { font-size: 36px; font-weight: 700; margin: 0; }
+  h2 { font-size: 24px; font-weight: 600; margin: 16px 0; }
+  h3 { font-size: 18px; font-weight: 500; margin: 0 0 8px; }
+  p { font-size: 16px; line-height: 1.5; }
+  .tabs { display: flex; justify-content: space-around; margin: 16px 0; }
+  .tabs button { background: none; border: none; font-size: 18px; font-weight: 500; color: #0057D9; cursor: pointer; padding: 8px 16px; transition: color 200ms; }
+  .tabs button:focus, .tabs button:hover { color: #FF5722; outline: none; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .card { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 16px; }
+  .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
+  .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+  input:checked + .slider { background-color: #0057D9; }
+  input:checked + .slider:before { transform: translateX(20px); }
+  .thermostat { display: flex; align-items: center; }
+  .thermostat div { margin: 0 16px; text-align: center; }
+  .thermostat button { background: none; border: 1px solid #0057D9; color: #0057D9; border-radius: 4px; padding: 8px; cursor: pointer; transition: background-color 200ms, color 200ms; }
+  .thermostat button:hover, .thermostat button:focus { background-color: #0057D9; color: white; }
+  .scene-buttons { display: flex; justify-content: space-evenly; margin-top: 16px; }
+  .scene-buttons button { background-color: #FF5722; border: none; color: white; padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: background-color 200ms; }
+  .scene-buttons button:hover, .scene-buttons button:focus { background-color: #D84315; }
+  .notification { background-color: #FFCCBC; padding: 16px; border-left: 4px solid #FF5722; margin-top: 16px; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>HomeIQ Dashboard</h1>
+        <p id="time-date">00:00, January 1</p>
+      </div>
+      <p id="home-status">Home Status: 3 devices on</p>
+    </header>
+
+    <section id="room_selector" role="navigation">
+      <h2>Room Selector</h2>
+      <div class="tabs">
+        <button type="button" onclick="switchRoom('Living Room')">Living Room</button>
+        <button type="button" onclick="switchRoom('Bedroom')">Bedroom</button>
+        <button type="button" onclick="switchRoom('Kitchen')">Kitchen</button>
+        <button type="button" onclick="switchRoom('Garden')">Garden</button>
+      </div>
+    </section>
+
+    <section id="device_cards" aria-label="Device Cards">
+      <h2>Device Cards</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>Smart Bulb</h3>
+          <p>Status: <span id="bulb-status">Off</span></p>
+          <label class="switch">
+            <input type="checkbox" onclick="toggleDevice('bulb')" aria-checked="false">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="card">
+          <h3>Thermostat</h3>
+          <p>Status: <span id="thermostat-status">On</span></p>
+          <label class="switch">
+            <input type="checkbox" checked onclick="toggleDevice('thermostat')" aria-checked="true">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section id="thermostat_control" aria-label="Thermostat Control">
+      <h2>Thermostat Control</h2>
+      <div class="thermostat">
+        <div>
+          <p>Current Temp: <span id="current-temp">22°C</span></p>
+        </div>
+        <div>
+          <button type="button" onclick="adjustTemp(-1)">-</button>
+          <button type="button" onclick="adjustTemp(1)">+</button>
+          <p>Target Temp: <span id="target-temp">24°C</span></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="energy_usage" aria-label="Energy Usage Summary">
+      <h2>Energy Usage Summary</h2>
+      <p>Daily Consumption: 12 kWh</p>
+      <p>Cost: £3.50</p>
+    </section>
+
+    <section id="scenes" aria-label="Scenes Section">
+      <h2>Scenes</h2>
+      <div class="scene-buttons">
+        <button type="button" onclick="activateScene('morning')">Morning Mode</button>
+        <button type="button" onclick="activateScene('away')">Away Mode</button>
+        <button type="button" onclick="activateScene('evening')">Evening Mode</button>
+        <button type="button" onclick="activateScene('sleep')">Sleep Mode</button>
+      </div>
+    </section>
+
+    <section id="notifications" aria-label="Notifications Area">
+      <h2>Notifications</h2>
+      <div class="notification">
+        <p>Device Offline Alert: Sensor in Living Room</p>
+      </div>
+      <div class="notification">
+        <p>Unusual Energy Usage Alert: Spike detected</p>
+      </div>
+    </section>
+  </div>
+  <script>
+    function switchRoom(room) {
+      alert('Switched to ' + room);
+    }
+    function toggleDevice(device) {
+      const status = document.getElementById(`${device}-status`);
+      status.textContent = status.textContent === 'On' ? 'Off' : 'On';
+      const inputElem = document.querySelector(`input[onclick="toggleDevice('${device}')"]`);
+      inputElem.setAttribute('aria-checked', status.textContent === 'On');
+    }
+    function adjustTemp(change) {
+      const currentTempElem = document.getElementById('target-temp');
+      let currentTemp = parseInt(currentTempElem.textContent);
+      currentTemp += change;
+      currentTempElem.textContent = currentTemp + '°C';
+    }
+    function activateScene(scene) {
+      alert(scene.charAt(0).toUpperCase() + scene.slice(1) + ' Mode Activated');
+    }
+    function updateTime() {
+      const now = new Date();
+      const timeDateElem = document.getElementById('time-date');
+      const options = { hour: '2-digit', minute: '2-digit', month: 'long', day: 'numeric' };
+      timeDateElem.textContent = now.toLocaleTimeString([], options);
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+  </script>
+</body>
+</html>

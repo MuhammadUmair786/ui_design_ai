@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrightMinds - Home Screen</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #FDFCF8;
+            color: #2D3748;
+            line-height: 1.5;
+            padding: 24px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .welcome-header {
+            text-align: center;
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .mascot {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #FF6B35, #FFE66D);
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .welcome-text {
+            font-size: 32px;
+            font-weight: 800;
+            color: #2D3748;
+            margin-bottom: 8px;
+        }
+
+        .parent-settings {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 44px;
+            height: 44px;
+            background: #4ECDC4;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            transition: all 200ms ease;
+        }
+
+        .parent-settings:hover, .parent-settings:focus {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+        }
+
+        .parent-settings:focus {
+            outline: 3px solid #FFE66D;
+            outline-offset: 2px;
+        }
+
+        .progress-section {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .progress-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #2D3748;
+        }
+
+        .progress-bar-container {
+            background: #F7FAFC;
+            height: 12px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4ECDC4, #FFE66D);
+            border-radius: 12px;
+            width: 0;
+            transition: width 2s ease-out;
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .activities-completed {
+            font-size: 16px;
+            font-weight: 600;
+            color: #4ECDC4;
+        }
+
+        .celebration-icon {
+            font-size: 24px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes gentleBounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05) translateY(-4px); }
+            100% { transform: scale(1); }
+        }
+
+        .bounce-animation {
+            animation: gentleBounce 0.4s ease-out;
+        }
+
+        .subjects-section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #2D3748;
+        }
+
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .subject-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+            transition: all 200ms ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .subject-card:hover, .subject-card:focus {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .subject-card:focus {
+            outline: 3px solid #FFE66D;
+            outline-offset: 2px;
+        }
+
+        .subject-card:active {
+            transform: translateY(-2px) scale(0.98);
+        }
+
+        .subject-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .math-icon { background: #FF6B35; }
+        .reading-icon { background: #4ECDC4; }
+        .science-icon { background: #FFE66D; color: #2D3748; }
+        .art-icon { background: linear-gradient(135deg, #FF6B35, #4ECDC4); }
+
+        .subject-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2D3748;
+        }
+
+        .rewards-section {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .badges-container {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+        }
+
+        .badge {
+            flex: 0 0 80px;
+            text-align: center;
+        }
+
+        .badge-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFE66D, #FF6B35);
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .badge-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2D3748;
+        }
+
+        .view-all-link {
+            color: #4ECDC4;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .view-all-link:hover {
+            text-decoration: underline;
+        }
+
+        .view-all-link:focus {
+            outline: 2px solid #4ECDC4;
+            outline-offset: 2px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 320px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .pin-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            font-size: 18px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .pin-input:focus {
+            outline: none;
+            border-color: #4ECDC4;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 200ms ease;
+        }
+
+        .modal-button.primary {
+            background: #4ECDC4;
+            color: white;
+        }
+
+        .modal-button.secondary {
+            background: #E2E8F0;
+            color: #2D3748;
+        }
+
+        .modal-button:hover {
+            transform: translateY(-1px);
+        }
+
+        .modal-button:focus {
+            outline: 2px solid #FFE66D;
+            outline-offset: 2px;
+        }
+
+        @media (max-width: 360px) {
+            body { padding: 16px; }
+            .subjects-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header class="welcome-header">
+        <div class="mascot">🌟</div>
+        <h1 class="welcome-text">Hi Emma!</h1>
+        <p>Ready to learn something amazing today?</p>
+        <button class="parent-settings" aria-label="Parent Settings" onclick="openParentModal()">⚙️</button>
+    </header>
+
+    <section class="progress-section">
+        <h2 class="progress-title">Today's Progress</h2>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-stats">
+            <span class="activities-completed">3 of 4 activities completed</span>
+            <span class="celebration-icon">🎉</span>
+        </div>
+        <p style="margin-top: 8px; font-size: 18px; color: #4ECDC4;">Great job! One more to go!</p>
+    </section>
+
+    <section class="subjects-section">
+        <h2 class="section-title">Choose Your Adventure</h2>
+        <div class="subjects-grid">
+            <a href="#" class="subject-card" onclick="animateCard(this)">
+                <div class="subject-icon math-icon">🔢</div>
+                <div class="subject-name">Math</div>
+            </a>
+            <a href="#" class="subject-card" onclick="animateCard(this)">
+                <div class="subject-icon reading-icon">📚</div>
+                <div class="subject-name">Reading</div>
+            </a>
+            <a href="#" class="subject-card" onclick="animateCard(this)">
+                <div class="subject-icon science-icon">🧪</div>
+                <div class="subject-name">Science</div>
+            </a>
+            <a href="#" class="subject-card" onclick="animateCard(this)">
+                <div class="subject-icon art-icon">🎨</div>
+                <div class="subject-name">Art</div>
+            </a>
+        </div>
+    </section>
+
+    <section class="rewards-section">
+        <h2 class="section-title">Your Awesome Badges</h2>
+        <div class="badges-container">
+            <div class="badge">
+                <div class="badge-icon">⭐</div>
+                <div class="badge-title">Math Star</div>
+            </div>
+            <div class="badge">
+                <div class="badge-icon">📖</div>
+                <div class="badge-title">Story Master</div>
+            </div>
+            <div class="badge">
+                <div class="badge-icon">🔬</div>
+                <div class="badge-title">Scientist</div>
+            </div>
+            <div class="badge">
+                <div class="badge-icon">🏆</div>
+                <div class="badge-title">Champion</div>
+            </div>
+        </div>
+        <a href="#" class="view-all-link">View all badges →</a>
+        <p style="margin-top: 12px; font-size: 18px; color: #4ECDC4;">You earned 2 new badges this week! 🎊</p>
+    </section>
+
+    <div class="modal-overlay" id="parentModal" onclick="closeParentModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h3>Parent Settings</h3>
+            <p style="margin-bottom: 16px; color: #718096; font-size: 18px;">Enter your PIN to access settings</p>
+            <input type="password" class="pin-input" placeholder="Enter PIN" maxlength="4">
+            <div class="modal-buttons">
+                <button class="modal-button secondary" onclick="closeParentModal()">Cancel</button>
+                <button class="modal-button primary" onclick="validatePin()">Enter</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animate progress bar on page load
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                document.getElementById('progressBar').style.width = '75%';
+            }, 500);
+        });
+
+        // Subject card animation with gentle bounce
+        function animateCard(card) {
+            card.classList.add('bounce-animation');
+            setTimeout(() => {
+                card.classList.remove('bounce-animation');
+            }, 400);
+        }
+
+        // Parent settings modal
+        function openParentModal() {
+            const modal = document.getElementById('parentModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.querySelector('.pin-input').focus();
+            }, 100);
+        }
+
+        function closeParentModal(event) {
+            if (!event || event.target === document.getElementById('parentModal')) {
+                document.getElementById('parentModal').style.display = 'none';
+                document.querySelector('.pin-input').value = '';
+            }
+        }
+
+        function validatePin() {
+            const pin = document.querySelector('.pin-input').value;
+            if (pin === '1234') {
+                alert('Settings access granted!');
+                closeParentModal();
+            } else {
+                alert('Incorrect PIN. Please try again.');
+                document.querySelector('.pin-input').value = '';
+                document.querySelector('.pin-input').focus();
+            }
+        }
+
+        // Add button press animations
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName === 'BUTTON' && !e.target.classList.contains('subject-card')) {
+                e.target.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    e.target.style.transform = '';
+                }, 150);
+            }
+        });
+
+        // Keyboard navigation for modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeParentModal();
+            }
+            if (e.key === 'Enter' && document.getElementById('parentModal').style.display === 'flex') {
+                validatePin();
+            }
+        });
+    </script>
+</body>
+</html>

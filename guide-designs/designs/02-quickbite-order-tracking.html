@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickBite Real-Time Order Tracking</title>
+    <style>
+        :root {
+            --bg: #FFFFFF;
+            --text: #18181B;
+            --secondary: #F4F4F5;
+            --accent: #2563EB;
+            --border: #E4E4E7;
+            --radius: 4px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: #e5e7eb; color: var(--text); line-height: 1.5; }
+        
+        .container { max-width: 600px; margin: 0 auto; background: var(--bg); min-height: 100vh; display: flex; flex-direction: column; border-left: 1px solid var(--border); border-right: 1px solid var(--border); position: relative; overflow: hidden; }
+        
+        /* Banner Animation */
+        .banner-wrapper { position: absolute; top: 0; width: 100%; transform: translateY(-100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 10; }
+        .banner { background: #dcfce7; padding: 12px 24px; font-size: 13px; text-align: center; border-bottom: 1px solid #bbf7d0; }
+
+        header { padding: 48px 24px 24px; }
+        .eta { font-size: 48px; font-weight: 700; letter-spacing: -1px; margin-bottom: 8px; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; }
+        .ghost-btn { background: none; border: 1px solid var(--border); padding: 6px 16px; border-radius: var(--radius); cursor: pointer; font-size: 13px; font-weight: 500; }
+
+        .stepper { display: flex; justify-content: space-between; padding: 24px; gap: 8px; }
+        .step { flex: 1; text-align: center; }
+        .step-icon { width: 48px; height: 48px; border-radius: var(--radius); background: var(--secondary); display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; transition: 0.3s; border: 1px solid var(--border); }
+        .step.active .step-icon { border-color: var(--accent); color: var(--accent); }
+        .step.done .step-icon { background: var(--text); color: white; border-color: var(--text); }
+        .step-label { font-size: 13px; font-weight: 500; }
+
+        .map-view { height: 320px; background: #FAFAFA; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); position: relative; display: flex; align-items: center; justify-content: center; }
+        .map-grid { stroke: #E4E4E7; }
+
+        .driver-card { padding: 24px; margin-top: auto; }
+        .driver-info { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+        .avatar { width: 48px; height: 48px; background: #E4E4E7; border-radius: var(--radius); }
+        .btn-contact { width: 100%; padding: 12px; background: var(--text); color: white; border: none; border-radius: var(--radius); cursor: pointer; font-weight: 600; }
+        
+        .bottom-sheet { position: absolute; bottom: 0; width: 100%; background: white; border-top: 1px solid var(--border); padding: 24px; transform: translateY(100%); transition: 0.3s; z-index: 20; }
+        .rating-prompt { display: none; background: #F4F4F5; padding: 16px; margin-top: 16px; border-radius: var(--radius); text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="status-banner" class="banner-wrapper"><div class="banner">Order status updated: Driver is approaching.</div></div>
+        
+        <header id="header-status">
+            <div class="header-row">
+                <div class="eta">12 mins</div>
+                <button class="ghost-btn" aria-label="Open help menu" onclick="toggleSheet()">Help</button>
+            </div>
+        </header>
+
+        <section class="stepper">
+            <div class="step done"><div class="step-icon">🍳</div><div class="step-label">Prep</div></div>
+            <div class="step done"><div class="step-icon">🍲</div><div class="step-label">Cook</div></div>
+            <div class="step active"><div class="step-icon" id="pulse">🛵</div><div class="step-label">En Route</div></div>
+            <div class="step"><div class="step-icon">🏠</div><div class="step-label">Arrived</div></div>
+        </section>
+
+        <section class="map-view">
+            <svg width="100%" height="100%"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#F4F4F5" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(#grid)"/></svg>
+        </section>
+
+        <footer class="driver-card">
+            <div class="driver-info">
+                <div class="avatar"></div>
+                <div>
+                    <div style="font-weight: 600;">Marcus (Honda Civic)</div>
+                    <div style="font-size: 13px; color: #666;">1.2 miles away</div>
+                </div>
+            </div>
+            <button class="btn-contact" aria-label="Contact driver" onclick="alert('Dialing...')">Contact Driver</button>
+            <div id="rating-prompt" class="rating-prompt">How was your delivery? ⭐⭐⭐⭐⭐</div>
+        </footer>
+
+        <div id="help-sheet" class="bottom-sheet">
+            <h2 style="font-size: 20px; margin-bottom: 16px;">Help</h2>
+            <ul style="list-style: none; font-size: 16px;">
+                <li style="padding: 8px 0;">Where is my order?</li>
+                <li style="padding: 8px 0;">Change delivery instructions</li>
+                <li style="padding: 8px 0;">Report an issue</li>
+            </ul>
+            <button onclick="toggleSheet()" style="margin-top: 16px; width: 100%;">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Banner Slide
+        setTimeout(() => document.getElementById('status-banner').style.transform = 'translateY(0)', 500);
+        
+        // Pulse Effect
+        const pulse = document.getElementById('pulse');
+        setInterval(() => pulse.style.opacity = pulse.style.opacity === '0.5' ? '1' : '0.5', 800);
+
+        // Help Sheet
+        function toggleSheet() {
+            const sheet = document.getElementById('help-sheet');
+            sheet.style.transform = sheet.style.transform === 'translateY(0%)' ? 'translateY(100%)' : 'translateY(0%)';
+        }
+
+        // Delivered Simulation (Trigger Rate Experience)
+        setTimeout(() => {
+            document.getElementById('rating-prompt').style.display = 'block';
+            document.querySelector('.step:last-child').classList.add('active');
+        }, 5000);
+    </script>
+</body>
+</html>
