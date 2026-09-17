@@ -11,7 +11,7 @@ Evaluation gallery of generated HTML screens.
 3. [BrightMinds Dashboard](https://guide-designs.web.app/designs/03-brightminds-dashboard.html)
 4. [NovBank Transfer](https://guide-designs.web.app/designs/04-novbank-transfer.html)
 5. [HomeIQ Tablet Control Dashboard](https://guide-designs.web.app/designs/05-homeiq-tablet-dashboard.html)
-6. [HomeIQ Smart Home Dashboard](https://guide-designs.web.app/designs/06-homeiq-smart-home-dashboard.html)
+6. [SplitEasy Settlement Interface](https://guide-designs.web.app/designs/06-spliteasy-settlement.html)
 7. [Book Appointment — MediBook](https://guide-designs.web.app/designs/07-medibook-book-appointment.html)
 8. [QuickBite Order Tracking](https://guide-designs.web.app/designs/08-quickbite-order-tracking.html)
 9. [BrightMinds Home Screen](https://guide-designs.web.app/designs/09-brightminds-home.html)
